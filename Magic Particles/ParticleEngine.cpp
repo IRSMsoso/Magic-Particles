@@ -48,6 +48,7 @@ void ParticleEngine::update(std::chrono::duration<double> delta, SDL_DisplayMode
 			//std::cout << "Size: " << particles.size() << std::endl;
 		}
 	}
+	std::cout << "Particle List Length: " << particles.size() << std::endl;
 }
 
 void ParticleEngine::render(SDL_Renderer* renderer) {
