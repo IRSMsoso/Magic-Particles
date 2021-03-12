@@ -33,11 +33,14 @@ void ParticleEngine::update(std::chrono::duration<double> delta, SDL_DisplayMode
 		MathVector particlePosition = particles.at(i)->getPosition();
 		MathVector particleVelocity = particles.at(i)->getVelocity();
 
-		if (particlePosition.x < 0 || particlePosition.x > displayMode->w)
-			particles.at(i)->setVelocity(MathVector(particleVelocity.x * -1, particleVelocity.y));
-		if (particlePosition.y < 0 || particlePosition.y > displayMode->h)
-			particles.at(i)->setVelocity(MathVector(particleVelocity.x, particleVelocity.y * -1));
-		
+		if (particlePosition.x < 0)
+			particles.at(i)->setVelocity(MathVector(abs(particleVelocity.x), particleVelocity.y));
+		else if (particlePosition.x > displayMode->w)
+			particles.at(i)->setVelocity(MathVector(abs(particleVelocity.x) * -1, particleVelocity.y));
+		if (particlePosition.y < 0)
+			particles.at(i)->setVelocity(MathVector(particleVelocity.x, abs(particleVelocity.y)));
+		else if (particlePosition.y > displayMode->h)
+			particles.at(i)->setVelocity(MathVector(particleVelocity.x, abs(particleVelocity.y) * -1));
 
 		//Delete the ones that are close.
 		if (diffVector.getMagnitude() < 3) {

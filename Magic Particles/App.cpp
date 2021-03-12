@@ -68,6 +68,19 @@ void App::render()
 }
 
 void App::update() {
+    /*
+    SDL_Color color;
+    color.r = 0xFF;
+    color.b = 0x00;
+    color.g = 0x00;
+    color.a = 0xFF;
+    for (int i = 0; i < 1; i++) {
+        SDL_Point p;
+        p.x = rand() % 1920;
+        p.y = rand() % 1080;
+        particleEngine.spawnParticle(p, color);
+    }
+    */
     particleEngine.update(lastTimeDifference, &DM);
     //std::cout << lastTimeDifference.count() << std::endl;
 }
