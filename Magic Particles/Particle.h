@@ -5,7 +5,7 @@
 #include <iostream>
 
 
-const static int CAPPEDVELOCITY = 300;
+const static int CAPPEDVELOCITY = 400;
 
 class Particle {
 

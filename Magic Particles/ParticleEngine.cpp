@@ -12,23 +12,24 @@ void ParticleEngine::update(std::chrono::duration<double> delta, SDL_DisplayMode
 		//std::cout << "Mouse: " << p.x << ", " << p.y << std::endl;
 		MathVector diffVector = MathVector(p.x + 2, p.y + 7) - particles.at(i)->getPosition();
 
-		
-		if (diffVector.getMagnitude() < 200) { 
-			MathVector velVector = diffVector.getUnitVector() * max(pow(diffVector.getMagnitude(), 2), 200);
+
+		////Doesn't Seem like this top one is neccessary to get the desired effect.
+		//if (diffVector.getMagnitude() < 0) { 
+			//MathVector velVector = diffVector.getUnitVector() * max(pow(diffVector.getMagnitude(), 2), 0);
 			//std::cout << "Difference Vector: " << diffVector.x << ", " << diffVector.y << std::endl;
 
-			particles.at(i)->setVelocity(velVector);
+			//particles.at(i)->setVelocity(velVector);
 
-			particles.at(i)->update(delta);
-		}
-		else {
-			MathVector accVector = (diffVector.getUnitVector() / pow(diffVector.getMagnitude(), 2)) * 100000000;
-			//std::cout << "Difference Vector: " << diffVector.x << ", " << diffVector.y << std::endl;
+			//particles.at(i)->update(delta);
+		//}
+		//else {
+		MathVector accVector = (diffVector.getUnitVector() / pow(diffVector.getMagnitude(), 2)) * 100000000;
+		//std::cout << "Difference Vector: " << diffVector.x << ", " << diffVector.y << std::endl;
 
-			particles.at(i)->setAcceleration(accVector);
+		particles.at(i)->setAcceleration(accVector);
 
-			particles.at(i)->update(delta);
-		}
+		particles.at(i)->update(delta);
+		//}
 
 		MathVector particlePosition = particles.at(i)->getPosition();
 		MathVector particleVelocity = particles.at(i)->getVelocity();
