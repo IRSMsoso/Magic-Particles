@@ -30,6 +30,8 @@ App::App() {
         close();
     }
 
+    needsGraphicsFlush = true;
+
 
     //Particle Engine Stuff.
     particleEngine.init(renderer);
@@ -51,20 +53,31 @@ App::App() {
 
 void App::render()
 {
-    //Set background to black (transparent).
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
-    SDL_RenderClear(renderer);
+
+    if (particleEngine.needsRendering()) {
+        //Set background to black (transparent).
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+        SDL_RenderClear(renderer);
 
 
-    //Simple rectangle.
-    //SDL_SetRenderDrawColor(renderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
+        //Simple rectangle.
+        //SDL_SetRenderDrawColor(renderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
 
-    //
-    particleEngine.render(renderer);
+        //
+        particleEngine.render(renderer);
 
 
-    //Present rendering to screen.
-    SDL_RenderPresent(renderer);
+        //Present rendering to screen.
+        SDL_RenderPresent(renderer);
+
+        needsGraphicsFlush = true;
+    }
+    else if (needsGraphicsFlush) {
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+        SDL_RenderClear(renderer);
+        SDL_RenderPresent(renderer);
+        needsGraphicsFlush = false;
+    }
 }
 
 void App::update() {
@@ -82,7 +95,10 @@ void App::update() {
     }
     */
     particleEngine.update(lastTimeDifference, &DM);
-    //std::cout << lastTimeDifference.count() << std::endl;
+
+    mouseEngine.addPoints(particleEngine.getDeleteCount()); //Extract count of deleted particles from engine and add those to mouse points.
+
+    mouseEngine.update();
 }
 
 void App::mainLoop() {

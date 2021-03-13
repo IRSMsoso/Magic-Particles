@@ -18,9 +18,14 @@ public:
 
 	void init(SDL_Renderer* renderer);
 
+	unsigned int getDeleteCount();
+
+	bool needsRendering() { return (particles.size() != 0); }
+
 private:
 	std::vector<Particle*> particles;
-	std::vector<Particle*> particleTrash;
+
+	unsigned int deleteCount;
 
 	SDL_Texture* particleTexture;
 

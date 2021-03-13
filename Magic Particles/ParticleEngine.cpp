@@ -2,6 +2,7 @@
 
 ParticleEngine::ParticleEngine() {
 	particleTexture = NULL;
+	deleteCount = 0;
 }
 
 void ParticleEngine::update(std::chrono::duration<double> delta, SDL_DisplayMode* displayMode) {
@@ -48,6 +49,7 @@ void ParticleEngine::update(std::chrono::duration<double> delta, SDL_DisplayMode
 			delete particles.at(i);
 			particles.erase(particles.begin() + i);
 			i--;
+			deleteCount += 1;
 			//std::cout << "Deleting Particle...\n";
 			//std::cout << "Size: " << particles.size() << std::endl;
 		}
@@ -81,4 +83,11 @@ void ParticleEngine::init(SDL_Renderer* renderer) {
 	if (particleTexture == NULL) {
 		printf("Unable to load image %s! SDL_image Error: %s\n", "magicparticle1.png", IMG_GetError());
 	}
+}
+
+unsigned int ParticleEngine::getDeleteCount()
+{
+	unsigned int returnVal = deleteCount;
+	deleteCount = 0;
+	return returnVal;
 }

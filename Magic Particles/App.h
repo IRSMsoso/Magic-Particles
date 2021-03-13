@@ -35,8 +35,12 @@ protected:
 
 private:
 	bool shouldRun;
+	bool needsGraphicsFlush; //This is used to make sure screen is flushed after turning off rendering due to being idle. If this wasn't here, remnants would be left on the screen.
 	double fps;
 	ParticleEngine particleEngine;
+	MouseEngine mouseEngine;
+
+	unsigned int truePoints;
 
 
 	//Timing Stuff.
