@@ -43,6 +43,8 @@ private:
 	unsigned int truePoints;
 
 
+	void customizeWindow();
+
 	//Timing Stuff.
 	std::chrono::system_clock::time_point fpsControlClock;
 	std::chrono::system_clock::time_point fpsClock;

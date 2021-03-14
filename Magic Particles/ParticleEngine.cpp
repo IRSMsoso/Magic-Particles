@@ -60,8 +60,6 @@ void ParticleEngine::update(std::chrono::duration<double> delta, SDL_DisplayMode
 void ParticleEngine::render(SDL_Renderer* renderer) {
 	for (int i = 0; i < particles.size(); i++) {
 		SDL_Point point = particles.at(i)->getNearestIntPoint();
-		SDL_Color newColor = particles.at(i)->getColor();
-		SDL_SetRenderDrawColor(renderer, newColor.r, newColor.g, newColor.b, newColor.a);
 		//SDL_RenderDrawPoint(renderer, point.x, point.y);
 		SDL_Rect rect;
 		rect.x = point.x;
@@ -69,13 +67,13 @@ void ParticleEngine::render(SDL_Renderer* renderer) {
 		rect.w = 6;
 		rect.h = 6;
 		SDL_RenderCopy(renderer, particleTexture, NULL, &rect);
-		//SDL_RenderFillRect(renderer, &rect);
-
 	}
 }
 
-void ParticleEngine::spawnParticle(SDL_Point point, SDL_Color color) {
-	particles.push_back(new Particle(point, color));
+void ParticleEngine::spawnParticle(SDL_Point point, SDL_Point velocity) {
+	Particle* newParticle = new Particle(point);
+	newParticle->setVelocity(MathVector(velocity.x, velocity.y));
+	particles.push_back(newParticle);
 }
 
 void ParticleEngine::init(SDL_Renderer* renderer) {

@@ -14,13 +14,15 @@ public:
 	
 	void render(SDL_Renderer* renderer);
 
-	void spawnParticle(SDL_Point point, SDL_Color color);
+	void spawnParticle(SDL_Point point, SDL_Point velocity);
 
 	void init(SDL_Renderer* renderer);
 
 	unsigned int getDeleteCount();
 
 	bool needsRendering() { return (particles.size() != 0); }
+
+	unsigned int getPointParticleCount() { return particles.size(); }
 
 private:
 	std::vector<Particle*> particles;
