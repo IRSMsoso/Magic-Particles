@@ -34,6 +34,13 @@ App::App() {
 
     customizeWindow();
 
+
+
+    //Networking init stuff.
+    socket.setBlocking(false);
+    networkClock = std::chrono::system_clock::now();
+
+
     //Particle Engine Stuff.
     particleEngine.init(renderer);
 
@@ -45,7 +52,7 @@ App::App() {
         //particleEngine.spawnParticle(p);
     //}
 
-    truePoints = 5000;
+    truePoints = 0;
     
 }
 
@@ -126,6 +133,48 @@ void App::update() {
         }
     }
 
+
+    //Networking stuff.
+    sf::IpAddress sender;
+    unsigned short port;
+    std::size_t received;
+    char* receiveData = new char[100]; //Allocate new data
+
+
+    socket.setBlocking(false);
+    sf::Socket::Status status = socket.receive(receiveData, 1024, received);
+    if (status == sf::Socket::Done) {
+        std::string message(receiveData, received);
+        //std::cout << "Received: " << message << std::endl;
+        //std::cout << "Size Received: " << received << std::endl;
+        truePoints = std::stoi(message);
+        socket.disconnect();
+    }
+    else if (status == sf::Socket::Disconnected || status == sf::Socket::Error) {
+        //std::cout << "Disconnected.. Connecting again\n";
+        socket.connect(sf::IpAddress("localhost"), 54562);
+    }
+    else {
+        //std::cout << "Status: " << status << std::endl;
+    }
+
+    socket.setBlocking(true);
+    const std::chrono::duration<double> timeDiff = std::chrono::system_clock::now() - networkClock;
+    if (timeDiff.count() > 5 && socket.getRemoteAddress() != sf::IpAddress::None) {
+        //Prepare Data
+        std::string sendString = "test"; //What to send.
+        char* sendData = new char[sendString.length() + 1]; //Allocate new data
+        std::strcpy(sendData, sendString.c_str());
+
+        //Send Data
+        //std::cout << "Sending Data\n";
+        socket.send(sendData, sendString.length());
+        //std::cout << "Sent Data\n";
+        networkClock = std::chrono::system_clock::now();
+        delete[] sendData;
+    }
+
+    delete[] receiveData;
 }
 
 void App::mainLoop() {
@@ -142,10 +191,10 @@ void App::mainLoop() {
         render();
         
         SDL_Event pollEvent;
-        SDL_PollEvent(&pollEvent);
+        SDL_PollEvent(&pollEvent); //This is needed to keep window from going unresponsive. Internally (as I understand), SDL uses this function to communicate with windows and stay alive.
 
 
-        customizeWindow(); //What if I just call this every frame?
+        //customizeWindow(); //What if I just call this every frame? NO! not needed.
 
         //Wait if we exceed the our goal FPS.
         const std::chrono::duration<double> controlDuration = std::chrono::system_clock::now() - fpsControlClock;
@@ -156,7 +205,7 @@ void App::mainLoop() {
         //Find actual FPS.
         const std::chrono::duration<double> actualDuration = std::chrono::system_clock::now() - fpsControlClock;
 
-        std::cout << "FPS: " << 1.0 / actualDuration.count() << std::endl;
+        //std::cout << "FPS: " << 1.0 / actualDuration.count() << std::endl;
 
         lastTimeDifference = actualDuration;
 

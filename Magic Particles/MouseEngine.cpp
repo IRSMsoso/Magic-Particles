@@ -29,7 +29,7 @@ void MouseEngine::update() {
 		setCursorFromSFMLImage(modifiedCursor);
 		shouldUpdate = false;
 	}
-	std::cout << "Points: " << points << std::endl;
+	//std::cout << "Points: " << points << std::endl;
 }
 
 void MouseEngine::updateRankFromPoints() {

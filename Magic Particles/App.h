@@ -7,6 +7,10 @@
 #include <thread>
 #include "ParticleEngine.h"
 #include "MouseEngine.h"
+#include <SFML/Network.hpp>
+#include <string>
+#include <cstring>
+#include <iostream>
 
 
 class App{
@@ -42,12 +46,17 @@ private:
 
 	unsigned int truePoints;
 
+	std::string discordID;
+
+	//Networking Stuff.
+	sf::TcpSocket socket;
 
 	void customizeWindow();
 
 	//Timing Stuff.
 	std::chrono::system_clock::time_point fpsControlClock;
 	std::chrono::system_clock::time_point fpsClock;
+	std::chrono::system_clock::time_point networkClock;
 	std::chrono::duration<double> lastTimeDifference;
 };
 
