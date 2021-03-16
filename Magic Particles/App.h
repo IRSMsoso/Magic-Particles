@@ -6,6 +6,11 @@
 #include <chrono>
 #include <thread>
 #include "ParticleEngine.h"
+#include "MouseEngine.h"
+#include <SFML/Network.hpp>
+#include <string>
+#include <cstring>
+#include <iostream>
 
 
 class App{
@@ -34,13 +39,24 @@ protected:
 
 private:
 	bool shouldRun;
+	bool needsGraphicsFlush; //This is used to make sure screen is flushed after turning off rendering due to being idle. If this wasn't here, remnants would be left on the screen.
 	double fps;
 	ParticleEngine particleEngine;
+	MouseEngine mouseEngine;
 
+	unsigned int truePoints;
+
+	std::string discordID;
+
+	//Networking Stuff.
+	sf::TcpSocket socket;
+
+	void customizeWindow();
 
 	//Timing Stuff.
 	std::chrono::system_clock::time_point fpsControlClock;
 	std::chrono::system_clock::time_point fpsClock;
+	std::chrono::system_clock::time_point networkClock;
 	std::chrono::duration<double> lastTimeDifference;
 };
 

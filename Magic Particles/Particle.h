@@ -5,20 +5,19 @@
 #include <iostream>
 
 
-const static int CAPPEDVELOCITY = 300;
+const static int CAPPEDVELOCITY = 400;
 
 class Particle {
 
 
 public:
-	Particle(SDL_Point point, SDL_Color color);
+	Particle(SDL_Point point);
 
 	void setPosition(MathVector);
 	void setVelocity(MathVector);
 	void setAcceleration(MathVector);
 
 	SDL_Point getNearestIntPoint();
-	SDL_Color getColor() { return color; }
 	MathVector getPosition() { return position; }
 	MathVector getVelocity() { return velocity; }
 
@@ -26,7 +25,6 @@ public:
 
 
 private:
-	SDL_Color color;
 	MathVector position; //Pixels
 	MathVector velocity; //Pixels / Second
 	MathVector acceleration; //Pixels / Second / Second

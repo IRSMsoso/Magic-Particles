@@ -1,7 +1,6 @@
 #include "Particle.h"
 
-Particle::Particle(SDL_Point point, SDL_Color particle_color) {
-	color = particle_color;
+Particle::Particle(SDL_Point point) {
 	position = MathVector(point.x, point.y);
 }
 

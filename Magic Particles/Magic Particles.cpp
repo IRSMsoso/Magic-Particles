@@ -10,7 +10,8 @@ int main(int argc, char* argv[]) {
     App app;
     app.setFPS(120);
     app.mainLoop();
-    
+    //MouseEngine mouseEngine;
 
+    system("pause");
     return 0;
 }
