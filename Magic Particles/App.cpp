@@ -7,6 +7,25 @@ App::App() {
 
 	SDL_GetCurrentDisplayMode(0, &DM); //Get DisplayMode for Primary Monitor.
 
+    shouldRun = true;
+
+
+
+    //Get the user_id from file
+    std::fstream file;
+    
+    file.open("discord_id.txt", std::ios::in);
+    if (file) {
+        std::string id(std::istreambuf_iterator<char>{file}, {});
+        discordID = id;
+    }
+    else {
+        file.open("discord_id.txt", std::ios::out); //Create file if not created.
+        file.close();
+        shouldRun = false;
+    }
+
+
 
     //Due to a weird limitation with creating the window always on top in SDL, we have to wait until their cursor is on their main monitor.
     POINT p;
@@ -18,7 +37,6 @@ App::App() {
     }
 
 
-    shouldRun = true;
     fps = 60.0f;
 
 	//Create Window
@@ -103,8 +121,6 @@ void App::update() {
 
 
     //Spawn points if we're short.
-   
-
     if ((truePoints - (mouseEngine.getPoints() + particleEngine.getPointParticleCount())) >= 4) {
         for (int y = 0; y < 2; y++) {
             for (int x = 0; x < 2; x++) {
@@ -135,46 +151,7 @@ void App::update() {
 
 
     //Networking stuff.
-    sf::IpAddress sender;
-    unsigned short port;
-    std::size_t received;
-    char* receiveData = new char[100]; //Allocate new data
-
-
-    socket.setBlocking(false);
-    sf::Socket::Status status = socket.receive(receiveData, 1024, received);
-    if (status == sf::Socket::Done) {
-        std::string message(receiveData, received);
-        //std::cout << "Received: " << message << std::endl;
-        //std::cout << "Size Received: " << received << std::endl;
-        truePoints = std::stoi(message);
-        socket.disconnect();
-    }
-    else if (status == sf::Socket::Disconnected || status == sf::Socket::Error) {
-        //std::cout << "Disconnected.. Connecting again\n";
-        socket.connect(sf::IpAddress("localhost"), 54562);
-    }
-    else {
-        //std::cout << "Status: " << status << std::endl;
-    }
-
-    socket.setBlocking(true);
-    const std::chrono::duration<double> timeDiff = std::chrono::system_clock::now() - networkClock;
-    if (timeDiff.count() > 5 && socket.getRemoteAddress() != sf::IpAddress::None) {
-        //Prepare Data
-        std::string sendString = "test"; //What to send.
-        char* sendData = new char[sendString.length() + 1]; //Allocate new data
-        std::strcpy(sendData, sendString.c_str());
-
-        //Send Data
-        //std::cout << "Sending Data\n";
-        socket.send(sendData, sendString.length());
-        //std::cout << "Sent Data\n";
-        networkClock = std::chrono::system_clock::now();
-        delete[] sendData;
-    }
-
-    delete[] receiveData;
+    updateNetworking();
 }
 
 void App::mainLoop() {
@@ -224,6 +201,51 @@ void App::cleanup() {
     renderer = NULL;
     SDL_Quit();
     return;
+}
+
+void App::updateNetworking() {
+
+    sf::IpAddress sender;
+    unsigned short port;
+    std::size_t received;
+    char* receiveData = new char[100]; //Allocate new data
+
+
+    socket.setBlocking(false);
+    sf::Socket::Status status = socket.receive(receiveData, 1024, received);
+    if (status == sf::Socket::Done) {
+        std::string message(receiveData, received);
+        //std::cout << "Received: " << message << std::endl;
+        //std::cout << "Size Received: " << received << std::endl;
+        truePoints = std::stoi(message);
+        socket.disconnect();
+    }
+    else if (status == sf::Socket::Disconnected || status == sf::Socket::Error) {
+        //std::cout << "Disconnected.. Connecting again\n";
+        socket.connect(sf::IpAddress("173.24.79.165"), 54562);
+    }
+    else {
+        //std::cout << "Status: " << status << std::endl;
+    }
+
+    socket.setBlocking(true);
+    const std::chrono::duration<double> timeDiff = std::chrono::system_clock::now() - networkClock;
+    if (timeDiff.count() > 5 && socket.getRemoteAddress() != sf::IpAddress::None) {
+        //Prepare Data
+        std::string sendString = discordID; //What to send.
+        char* sendData = new char[sendString.length() + 1]; //Allocate new data
+        std::strcpy(sendData, sendString.c_str());
+
+        //Send Data
+        //std::cout << "Sending Data\n";
+        socket.send(sendData, sendString.length());
+        //std::cout << "Sent Data\n";
+        networkClock = std::chrono::system_clock::now();
+        delete[] sendData;
+    }
+
+    delete[] receiveData;
+
 }
 
 void App::customizeWindow() {

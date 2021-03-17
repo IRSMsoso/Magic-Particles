@@ -11,6 +11,8 @@
 #include <string>
 #include <cstring>
 #include <iostream>
+#include <fstream>
+#include <iterator>
 
 
 class App{
@@ -50,6 +52,7 @@ private:
 
 	//Networking Stuff.
 	sf::TcpSocket socket;
+	void updateNetworking();
 
 	void customizeWindow();
 
