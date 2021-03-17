@@ -2,6 +2,7 @@
 
 
 bool isFullscreen(HWND); //Forward declaration for class-independent function below.
+bool cursorShown();
 
 
 ParticleEngine::ParticleEngine() {
@@ -99,7 +100,7 @@ bool ParticleEngine::needsRendering()
 	QUERY_USER_NOTIFICATION_STATE pquns;
 	SHQueryUserNotificationState(&pquns);
 
-	return ((particles.size() != 0) && !isFullscreen(GetForegroundWindow()));
+	return ((particles.size() != 0) && !isFullscreen(GetForegroundWindow()) && cursorShown());
 	
 }
 
@@ -118,4 +119,15 @@ bool isFullscreen(HWND windowHandle)
 		&& windowRect.right == monitorInfo.rcMonitor.right
 		&& windowRect.top == monitorInfo.rcMonitor.top
 		&& windowRect.bottom == monitorInfo.rcMonitor.bottom;
+}
+
+bool cursorShown() {
+	CURSORINFO ci = { sizeof(CURSORINFO) };
+
+	if (GetCursorInfo(&ci)) {
+		if (ci.flags == 1) {
+			return true;
+		}
+	}
+	return false;
 }
