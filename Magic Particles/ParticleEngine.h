@@ -20,7 +20,7 @@ public:
 
 	unsigned int getDeleteCount();
 
-	bool needsRendering() { return (particles.size() != 0); }
+	bool needsRendering();
 
 	unsigned int getPointParticleCount() { return particles.size(); }
 

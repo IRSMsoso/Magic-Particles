@@ -1,5 +1,9 @@
 #include "ParticleEngine.h"
 
+
+bool isFullscreen(HWND); //Forward declaration for class-independent function below.
+
+
 ParticleEngine::ParticleEngine() {
 	particleTexture = NULL;
 	deleteCount = 0;
@@ -88,4 +92,30 @@ unsigned int ParticleEngine::getDeleteCount()
 	unsigned int returnVal = deleteCount;
 	deleteCount = 0;
 	return returnVal;
+}
+
+bool ParticleEngine::needsRendering()
+{
+	QUERY_USER_NOTIFICATION_STATE pquns;
+	SHQueryUserNotificationState(&pquns);
+
+	return ((particles.size() != 0) && !isFullscreen(GetForegroundWindow()));
+	
+}
+
+
+//This function is taken from https://stackoverflow.com/questions/7009080/detecting-full-screen-mode-in-windows
+bool isFullscreen(HWND windowHandle)
+{
+	MONITORINFO monitorInfo = { 0 };
+	monitorInfo.cbSize = sizeof(MONITORINFO);
+	GetMonitorInfo(MonitorFromWindow(windowHandle, MONITOR_DEFAULTTOPRIMARY), &monitorInfo);
+
+	RECT windowRect;
+	GetWindowRect(windowHandle, &windowRect);
+
+	return windowRect.left == monitorInfo.rcMonitor.left
+		&& windowRect.right == monitorInfo.rcMonitor.right
+		&& windowRect.top == monitorInfo.rcMonitor.top
+		&& windowRect.bottom == monitorInfo.rcMonitor.bottom;
 }
