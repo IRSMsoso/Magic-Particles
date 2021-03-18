@@ -3,15 +3,17 @@
 #include "MathVector.h"
 #include <chrono>
 #include <iostream>
+#include "ParticleEngine.h"
 
-
-const static int CAPPEDVELOCITY = 400;
+class ParticleEngine; //Forward declaration of ParticleEngine so that we can use it's pointer to spawn particles.
 
 class Particle {
 
 
 public:
-	Particle(SDL_Point point);
+	Particle(MathVector point);
+
+	virtual ~Particle();
 
 	void setPosition(MathVector);
 	void setVelocity(MathVector);
@@ -20,14 +22,20 @@ public:
 	SDL_Point getNearestIntPoint();
 	MathVector getPosition() { return position; }
 	MathVector getVelocity() { return velocity; }
+	bool getShouldDelete() { return shouldDie; }
+	bool getShouldGivePointsOnDeath() { return shouldGivePointsOnDeath; }
 
-	void update(std::chrono::duration<double> delta);
+	virtual void update(std::chrono::duration<double> delta, ParticleEngine* pEngine); //Particles should override this if needed, being sure to call super() for acc -> vel and vel -> pos logic.
 
 
-private:
+protected:
 	MathVector position; //Pixels
 	MathVector velocity; //Pixels / Second
 	MathVector acceleration; //Pixels / Second / Second
 
+	bool shouldGivePointsOnDeath; // Kind of a hacky way to do it but w/e.
+	bool shouldDie;
+
+	int velocityCap = 400; //Default
 };
 

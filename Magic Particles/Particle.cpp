@@ -1,7 +1,13 @@
 #include "Particle.h"
 
-Particle::Particle(SDL_Point point) {
+Particle::Particle(MathVector point) {
 	position = MathVector(point.x, point.y);
+	shouldDie = false;
+	shouldGivePointsOnDeath = false;
+}
+
+Particle::~Particle()
+{
 }
 
 void Particle::setPosition(MathVector newPosition) {
@@ -24,12 +30,14 @@ SDL_Point Particle::getNearestIntPoint()
 	return point;
 }
 
-void Particle::update(std::chrono::duration<double> delta) {
+void Particle::update(std::chrono::duration<double> delta, ParticleEngine* pEngine) {
 	velocity = velocity + (acceleration * delta.count());
-	if (CAPPEDVELOCITY != 0 && velocity.getMagnitude() > CAPPEDVELOCITY) { //Reduce velocity to cap if needed.
-		velocity = (velocity.getUnitVector() * CAPPEDVELOCITY);
+	if (velocityCap != 0 && velocity.getMagnitude() > velocityCap) { //Reduce velocity to cap if needed.
+		velocity = (velocity.getUnitVector() * velocityCap);
 	}
 	position = position + (velocity * delta.count());
+
+	
 
 	//std::cout << "Position: " << position.x << ", " << position.y << std::endl;
 	//std::cout << "Velocity: " << velocity.x << ", " << velocity.y << std::endl;

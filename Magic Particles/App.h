@@ -13,6 +13,7 @@
 #include <iostream>
 #include <fstream>
 #include <iterator>
+#include "AddPointParticle.h"
 
 
 class App{
@@ -53,6 +54,8 @@ private:
 	//Networking Stuff.
 	sf::TcpSocket socket;
 	void updateNetworking();
+
+	void appLogic();
 
 	void customizeWindow();
 

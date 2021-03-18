@@ -36,6 +36,12 @@
     <ClCompile Include="ColorCursor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="AddPointParticle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LosePointParticle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.h">
@@ -54,6 +60,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ColorCursor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AddPointParticle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LosePointParticle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

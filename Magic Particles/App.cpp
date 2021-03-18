@@ -1,6 +1,6 @@
 #include "App.h"
 
-App::App() {
+App::App(): particleEngine(&DM) {
 
 	SDL_Init(SDL_INIT_VIDEO); //Init SDL
     IMG_Init(IMG_INIT_PNG);
@@ -9,6 +9,8 @@ App::App() {
 
     shouldRun = true;
 
+
+    //Instantiate ParticleEngine.
 
 
     //Get the user_id from file
@@ -74,6 +76,7 @@ App::App() {
     
 }
 
+//Called from mainLoop(). Renders the screen. Only does so if we have objects on the screen that need rendering. Called every frame.
 void App::render()
 {
 
@@ -99,6 +102,7 @@ void App::render()
     }
 }
 
+//Called from mainLoop(). This calls all the "update" related functions, including those of member objects. Called every frame.
 void App::update() {
     /*
     SDL_Color color;
@@ -120,40 +124,15 @@ void App::update() {
     mouseEngine.update();
 
 
-    //Spawn points if we're short.
-    if ((truePoints - (mouseEngine.getPoints() + particleEngine.getPointParticleCount())) >= 4) {
-        for (int y = 0; y < 2; y++) {
-            for (int x = 0; x < 2; x++) {
-                SDL_Point velocity, point;
-
-                static const int SHOOTSPEED = 100;
-
-                if (x == 0)
-                    velocity.x = SHOOTSPEED;
-                else
-                    velocity.x = -1 * SHOOTSPEED;
-                if (y == 0)
-                    velocity.y = SHOOTSPEED;
-                else
-                    velocity.y = -1 * SHOOTSPEED;
-                if (x == 0)
-                    point.x = 0;
-                else
-                    point.x = DM.w - 1;
-                if (y == 0)
-                    point.y = 0;
-                else
-                    point.y = DM.h - 1;
-                particleEngine.spawnParticle(point, velocity);
-            }
-        }
-    }
+    // Spawning particles of we're short and all that.
+    appLogic();
 
 
     //Networking stuff.
     updateNetworking();
 }
 
+//The main loop that we will be stuck in for a majority of the program's life.
 void App::mainLoop() {
     //Frame limit stuff.
 
@@ -193,6 +172,7 @@ void App::mainLoop() {
     return;
 }
 
+//Cleansup windows and such from SDL. Called when app finishes running.
 void App::cleanup() {
     //Cleanup.
     SDL_DestroyWindow(window);
@@ -203,6 +183,7 @@ void App::cleanup() {
     return;
 }
 
+//Manages the network logic for the app. This includes connecting, sending, receiving, and setting appropriate data. Called every frame.
 void App::updateNetworking() {
 
     sf::IpAddress sender;
@@ -218,11 +199,12 @@ void App::updateNetworking() {
         //std::cout << "Received: " << message << std::endl;
         //std::cout << "Size Received: " << received << std::endl;
         truePoints = std::stoi(message);
-        socket.disconnect();
     }
     else if (status == sf::Socket::Disconnected || status == sf::Socket::Error) {
-        //std::cout << "Disconnected.. Connecting again\n";
-        socket.connect(sf::IpAddress("173.24.79.165"), 54562);
+        socket.setBlocking(true); //This needs to be non-blocking or it doesn't end up connecting long-distance where connections can be slow.
+        std::cout << "Disconnected.. Connecting again\n";
+        std::cout << "Connection Code: " << socket.connect(sf::IpAddress("173.24.79.165"), 54562) << std::endl;
+
     }
     else {
         //std::cout << "Status: " << status << std::endl;
@@ -237,8 +219,8 @@ void App::updateNetworking() {
         std::strcpy(sendData, sendString.c_str());
 
         //Send Data
-        //std::cout << "Sending Data\n";
-        socket.send(sendData, sendString.length());
+        std::cout << "Sending Data\n";
+        std::cout << socket.send(sendData, sendString.length()) << std::endl;
         //std::cout << "Sent Data\n";
         networkClock = std::chrono::system_clock::now();
         delete[] sendData;
@@ -246,6 +228,42 @@ void App::updateNetworking() {
 
     delete[] receiveData;
 
+}
+
+//Does logic for the app itself. This includes spawning particles atm. Called every frame.
+void App::appLogic() {
+
+    //Spawn point particles if we're short.
+    if ((truePoints - (mouseEngine.getPoints() + particleEngine.getPointParticleCount())) >= 4) {
+        for (int y = 0; y < 2; y++) {
+            for (int x = 0; x < 2; x++) {
+                MathVector velocity, point;
+
+                static const int SHOOTSPEED = 100;
+
+                if (x == 0)
+                    velocity.x = SHOOTSPEED;
+                else
+                    velocity.x = -1.0 * SHOOTSPEED;
+                if (y == 0)
+                    velocity.y = SHOOTSPEED;
+                else
+                    velocity.y = -1.0 * SHOOTSPEED;
+                if (x == 0)
+                    point.x = 0;
+                else
+                    point.x = DM.w - 1.0;
+                if (y == 0)
+                    point.y = 0;
+                else
+                    point.y = DM.h - 1.0;
+
+                AddPointParticle* newParticle = new AddPointParticle(point);
+                newParticle->setVelocity(velocity);
+                particleEngine.spawnParticle(newParticle);
+            }
+        }
+    }
 }
 
 void App::customizeWindow() {

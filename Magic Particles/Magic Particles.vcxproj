@@ -145,8 +145,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AddPointParticle.cpp" />
     <ClCompile Include="App.cpp" />
     <ClCompile Include="ColorCursor.cpp" />
+    <ClCompile Include="LosePointParticle.cpp" />
     <ClCompile Include="Magic Particles.cpp" />
     <ClCompile Include="MathVector.cpp" />
     <ClCompile Include="MouseEngine.cpp" />
@@ -154,8 +156,10 @@
     <ClCompile Include="ParticleEngine.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AddPointParticle.h" />
     <ClInclude Include="App.h" />
     <ClInclude Include="ColorCursor.h" />
+    <ClInclude Include="LosePointParticle.h" />
     <ClInclude Include="MathVector.h" />
     <ClInclude Include="MouseEngine.h" />
     <ClInclude Include="Particle.h" />
