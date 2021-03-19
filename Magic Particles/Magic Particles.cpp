@@ -12,6 +12,6 @@ int main(int argc, char* argv[]) {
     app.mainLoop();
     //MouseEngine mouseEngine;
 
-    system("pause");
+    //system("pause");
     return 0;
 }
