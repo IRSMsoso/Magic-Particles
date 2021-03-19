@@ -50,7 +50,7 @@ App::App(): particleEngine(&DM) {
 
 
     needsGraphicsFlush = true;
-
+    shouldCatchup = true;
 
     customizeWindow();
 
@@ -198,7 +198,12 @@ void App::updateNetworking() {
         std::string message(receiveData, received);
         //std::cout << "Received: " << message << std::endl;
         //std::cout << "Size Received: " << received << std::endl;
-        truePoints = std::stoi(message);
+        unsigned int newPointValue = std::stoi(message);
+        if (shouldCatchup)
+            mouseEngine.setPoints(newPointValue);  //This is used to bring a newly opened client up to speed on their points.
+        shouldCatchup = false;
+
+        truePoints = newPointValue;
     }
     else if (status == sf::Socket::Disconnected || status == sf::Socket::Error) {
         socket.setBlocking(true); //This needs to be non-blocking or it doesn't end up connecting long-distance where connections can be slow.
@@ -234,7 +239,11 @@ void App::updateNetworking() {
 void App::appLogic() {
 
     //Spawn point particles if we're short.
-    if ((truePoints - (mouseEngine.getPoints() + particleEngine.getPointParticleCount())) >= 4) {
+    if (((int)truePoints - ((int)mouseEngine.getPoints() + (int)particleEngine.getPointParticleCount())) >= 4) {
+
+        //std::cout << "TruePoints (" << truePoints << ") - (MouseEngine (" << mouseEngine.getPoints() << ") + ParticleCount (" << particleEngine.getPointParticleCount() << ")) >= 4 is true\n";
+        //std::cout << "Value: " << (truePoints - (mouseEngine.getPoints() + particleEngine.getPointParticleCount())) << std::endl;
+
         for (int y = 0; y < 2; y++) {
             for (int x = 0; x < 2; x++) {
                 MathVector velocity, point;
@@ -263,6 +272,24 @@ void App::appLogic() {
                 particleEngine.spawnParticle(newParticle);
             }
         }
+    }
+
+    //Lose points if we're over.
+    if (mouseEngine.getPoints() > truePoints){
+        std::cout << "Mouse Engine: " << mouseEngine.getPoints() << std::endl;
+        std::cout << "True Points: " << truePoints << std::endl;
+        POINT p = particleEngine.getMousePosition();
+        MathVector position(p.x + 4.0, p.y + 9.0);
+        LosePointParticle* newParticle = new LosePointParticle(position);
+        MathVector velocity;
+        double radianAngle = ((rand() % 360) * PI / 180.0); //Picks random angle to shoot particle at.
+        const double SPEEDMODIFIER = 200.0;
+        double randScalar = ((double(rand() % 5) + 5.0) / 10.0) * SPEEDMODIFIER; //Will multiply speedmodifier by a random value between 0.5 and 0.9.
+        velocity.x = randScalar * cos(radianAngle);
+        velocity.y = randScalar * sin(radianAngle);
+        newParticle->setVelocity(velocity);
+        particleEngine.spawnParticle(newParticle);
+        mouseEngine.removePoints(1);
     }
 }
 

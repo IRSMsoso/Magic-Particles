@@ -3,7 +3,9 @@
 Particle::Particle(MathVector point) {
 	position = MathVector(point.x, point.y);
 	shouldDie = false;
-	shouldGivePointsOnDeath = false;
+	particleType = ParticleType::ParticleErrorType;
+	birthTime = std::chrono::system_clock::now();
+	lifeSpan = std::chrono::seconds(0);
 }
 
 Particle::~Particle()
@@ -31,13 +33,21 @@ SDL_Point Particle::getNearestIntPoint()
 }
 
 void Particle::update(std::chrono::duration<double> delta, ParticleEngine* pEngine) {
-	velocity = velocity + (acceleration * delta.count());
-	if (velocityCap != 0 && velocity.getMagnitude() > velocityCap) { //Reduce velocity to cap if needed.
-		velocity = (velocity.getUnitVector() * velocityCap);
-	}
-	position = position + (velocity * delta.count());
+	if (!shouldDie) {
+		velocity = velocity + (acceleration * delta.count());
+		if (velocityCap != 0 && velocity.getMagnitude() > velocityCap) { //Reduce velocity to cap if needed.
+			velocity = (velocity.getUnitVector() * velocityCap);
+		}
+		position = position + (velocity * delta.count());
 
-	
+
+		if (lifeSpan.count() > 0) {
+			if (std::chrono::system_clock::now() > birthTime + lifeSpan) {
+				shouldDie = true;
+			}
+		}
+
+	}
 
 	//std::cout << "Position: " << position.x << ", " << position.y << std::endl;
 	//std::cout << "Velocity: " << velocity.x << ", " << velocity.y << std::endl;

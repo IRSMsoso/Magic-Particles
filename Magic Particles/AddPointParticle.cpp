@@ -2,7 +2,7 @@
 
 AddPointParticle::AddPointParticle(MathVector point): Particle(point) {
 	velocityCap = 400; //Default for add point particle.
-	shouldGivePointsOnDeath = true;
+	particleType = ParticleType::AddPointParticleType;
 
 }
 
@@ -15,7 +15,7 @@ void AddPointParticle::update(std::chrono::duration<double> delta, ParticleEngin
 	POINT p = pEngine->getMousePosition();
 	SDL_DisplayMode* displayMode = pEngine->getDisplayMode();
 
-	MathVector diffVector = MathVector(p.x + 2.0, p.y + 7.0) - position;
+	MathVector diffVector = MathVector(p.x + 4.0, p.y + 9.0) - position; //Correction to position inside the mouse vector.
 	MathVector accVector = (diffVector.getUnitVector() / pow(diffVector.getMagnitude(), 2)) * 100000000.0;
 
 	acceleration = accVector;

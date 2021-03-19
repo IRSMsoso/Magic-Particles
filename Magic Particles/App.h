@@ -14,6 +14,10 @@
 #include <fstream>
 #include <iterator>
 #include "AddPointParticle.h"
+#include "LosePointParticle.h"
+
+
+#define PI 3.14159265
 
 
 class App{
@@ -54,6 +58,8 @@ private:
 	//Networking Stuff.
 	sf::TcpSocket socket;
 	void updateNetworking();
+
+	bool shouldCatchup; //This is used so that we can catchup with server points without the entire flood of points.
 
 	void appLogic();
 

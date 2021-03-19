@@ -5,6 +5,14 @@
 #include <iostream>
 #include "ParticleEngine.h"
 
+
+enum ParticleType {
+	ParticleErrorType,
+	AddPointParticleType,
+	LosePointParticleType,
+};
+
+
 class ParticleEngine; //Forward declaration of ParticleEngine so that we can use it's pointer to spawn particles.
 
 class Particle {
@@ -23,7 +31,7 @@ public:
 	MathVector getPosition() { return position; }
 	MathVector getVelocity() { return velocity; }
 	bool getShouldDelete() { return shouldDie; }
-	bool getShouldGivePointsOnDeath() { return shouldGivePointsOnDeath; }
+	ParticleType getParticleType() { return particleType; }
 
 	virtual void update(std::chrono::duration<double> delta, ParticleEngine* pEngine); //Particles should override this if needed, being sure to call super() for acc -> vel and vel -> pos logic.
 
@@ -33,8 +41,13 @@ protected:
 	MathVector velocity; //Pixels / Second
 	MathVector acceleration; //Pixels / Second / Second
 
-	bool shouldGivePointsOnDeath; // Kind of a hacky way to do it but w/e.
+	
+	ParticleType particleType;
 	bool shouldDie;
+
+	//Dying of old age logic members.
+	std::chrono::system_clock::time_point birthTime;
+	std::chrono::duration<double> lifeSpan;
 
 	int velocityCap = 400; //Default
 };

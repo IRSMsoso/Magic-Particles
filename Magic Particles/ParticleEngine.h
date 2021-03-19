@@ -24,7 +24,7 @@ public:
 
 	bool needsRendering();
 
-	unsigned int getPointParticleCount() { return particles.size(); }
+	unsigned int getPointParticleCount();
 
 	void incrementPointDeleteCount() { pointDeleteCount++; }
 
@@ -39,7 +39,9 @@ private:
 
 	unsigned int pointDeleteCount;
 
-	SDL_Texture* particleTexture;
+	//Various Textures
+	SDL_Texture* addPointParticleTexture;
+	SDL_Texture* losePointParticleTexture;
 
 };
 

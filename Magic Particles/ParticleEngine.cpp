@@ -6,7 +6,8 @@ bool cursorShown();
 
 
 ParticleEngine::ParticleEngine(SDL_DisplayMode* newDisplayMode) {
-	particleTexture = NULL;
+	addPointParticleTexture = nullptr;
+	losePointParticleTexture = nullptr;
 	pointDeleteCount = 0;
 	displayMode = newDisplayMode;
 }
@@ -23,7 +24,7 @@ void ParticleEngine::update(std::chrono::duration<double> delta, SDL_DisplayMode
 		//Delete particles that should be deleted.
 		if (particles.at(i)->getShouldDelete()) {
 
-			if (particles.at(i)->getShouldGivePointsOnDeath()) {
+			if (particles.at(i)->getParticleType() == ParticleType::AddPointParticleType) {
 				incrementPointDeleteCount();
 			}
 			
@@ -43,11 +44,19 @@ void ParticleEngine::render(SDL_Renderer* renderer) {
 		SDL_Point point = particles.at(i)->getNearestIntPoint();
 		//SDL_RenderDrawPoint(renderer, point.x, point.y);
 		SDL_Rect rect;
-		rect.x = point.x;
-		rect.y = point.y;
-		rect.w = 6;
-		rect.h = 6;
-		SDL_RenderCopy(renderer, particleTexture, NULL, &rect);
+		SDL_Texture* textureToUse = nullptr;
+		if (particles.at(i)->getParticleType() == ParticleType::AddPointParticleType) {
+			textureToUse = addPointParticleTexture;
+		}
+		if (particles.at(i)->getParticleType() == ParticleType::LosePointParticleType) {
+			textureToUse = losePointParticleTexture;
+		}
+		if (textureToUse != nullptr) {
+			SDL_QueryTexture(textureToUse, NULL, NULL, &rect.w, &rect.h);
+			rect.x = point.x - (rect.w) / 2;
+			rect.y = point.y - (rect.h) / 2;
+			SDL_RenderCopy(renderer, textureToUse, NULL, &rect);
+		}
 	}
 }
 
@@ -56,9 +65,10 @@ void ParticleEngine::spawnParticle(Particle* particle) {
 }
 
 void ParticleEngine::init(SDL_Renderer* renderer) {
-	particleTexture = IMG_LoadTexture(renderer, "magicparticle1.png");
-	if (particleTexture == NULL) {
-		printf("Unable to load image %s! SDL_image Error: %s\n", "magicparticle1.png", IMG_GetError());
+	addPointParticleTexture = IMG_LoadTexture(renderer, "magicparticle1.png");
+	losePointParticleTexture = IMG_LoadTexture(renderer, "magicparticle2.png");
+	if (addPointParticleTexture == NULL || losePointParticleTexture == NULL) {
+		printf("Unable to load image! SDL_image Error: %s\n", IMG_GetError());
 	}
 }
 
@@ -76,6 +86,17 @@ bool ParticleEngine::needsRendering()
 
 	return ((particles.size() != 0) && !isFullscreen(GetForegroundWindow()) && cursorShown());
 	
+}
+
+unsigned int ParticleEngine::getPointParticleCount()
+{
+	unsigned int count = 0;
+
+	for (int i = 0; i < particles.size(); i++) {
+		if (particles.at(i)->getParticleType() == ParticleType::AddPointParticleType)
+			count++;
+	}
+	return count;
 }
 
 
