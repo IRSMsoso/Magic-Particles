@@ -44,6 +44,8 @@ void MouseEngine::updateRankFromPoints() {
 	}
 }
 
+
+//Possible solutions for for animating the cursor: Store hcursors in list and setsystemcursor through that.
 void MouseEngine::setCursorFromSFMLImage(sf::Image* image) {
 
 	HDC hDC = GetDC(NULL);
@@ -64,7 +66,7 @@ void MouseEngine::setCursorFromSFMLImage(sf::Image* image) {
 	DeleteDC(hBitmapDC);
 	ReleaseDC(NULL, hDC);
 
-	HCURSOR hCursor = CColorCursor::CreateCursorFromBitmap(hBitmap, RGB(255, 255, 255), 0, 0);
+	HCURSOR hCursor = CColorCursor::CreateCursorFromBitmap(hBitmap, RGB(255, 255, 255), 0, 0); //This is possibly not getting deleted.
 
 	DeleteObject(hBitmap);
 	DeleteObject(hOldBitmap);
