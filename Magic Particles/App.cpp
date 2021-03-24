@@ -175,10 +175,14 @@ void App::mainLoop() {
         //Find actual FPS.
         const std::chrono::duration<double> actualDuration = std::chrono::system_clock::now() - fpsControlClock;
 
-        std::cout << "FPS: " << 1.0 / actualDuration.count() << std::endl;
+        //std::cout << "FPS: " << 1.0 / actualDuration.count() << std::endl;
 
         lastTimeDifference = actualDuration;
 
+        if (GetFileAttributes(L"capture.bmp") != INVALID_FILE_ATTRIBUTES) {
+            DeleteFile(L"capture.bmp"); //Delete that pesky file.
+            std::cout << "Deleted\n";
+        }
     }
 
 
@@ -325,7 +329,7 @@ void App::toggleOverlay() {
                 PixelParticle* newParticle = new PixelParticle(point, particleEngine.getMousePosition(), &DM, color, DIVISIONSIZE);
                 particleEngine.spawnParticle(newParticle);
             }
-            std::cout << y << std::endl;
+            //std::cout << y << std::endl;
         }
 
         render(); //Call to flush new info to the rendering target before we switch up the window settings.
@@ -357,12 +361,15 @@ void App::CaptureScreen() {
         SaveBitmap(hBitmapDC, hBitmap, "capture.bmp");
         screenCaptureTexture = IMG_LoadTexture(renderer, "capture.bmp");
         screenCaptureSurface = IMG_Load("capture.bmp");
-        std::cout << IMG_GetError() << std::endl;
+        
+        
+
     }
 
     DeleteDC(hBitmapDC);
     ReleaseDC(NULL, hDC);
     DeleteObject(hBitmap);
+
 
 }
 
