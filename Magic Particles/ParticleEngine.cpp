@@ -1,8 +1,7 @@
 #include "ParticleEngine.h"
 
 
-bool isFullscreen(HWND); //Forward declaration for class-independent function below.
-bool cursorShown();
+
 
 
 ParticleEngine::ParticleEngine(SDL_DisplayMode* newDisplayMode) {
@@ -18,7 +17,7 @@ void ParticleEngine::update(std::chrono::duration<double> delta, SDL_DisplayMode
 	for (int i = 0; i < particles.size(); i++) {
 		//Call update here.
 
-		particles.at(i)->update(delta, this);
+		particles.at(i)->update(delta);
 
 
 		//Delete particles that should be deleted.
@@ -35,27 +34,43 @@ void ParticleEngine::update(std::chrono::duration<double> delta, SDL_DisplayMode
 		}
 	}
 
-
 	
 }
 
 void ParticleEngine::render(SDL_Renderer* renderer) {
+
 	for (int i = 0; i < particles.size(); i++) {
-		SDL_Point point = particles.at(i)->getNearestIntPoint();
-		//SDL_RenderDrawPoint(renderer, point.x, point.y);
-		SDL_Rect rect;
-		SDL_Texture* textureToUse = nullptr;
-		if (particles.at(i)->getParticleType() == ParticleType::AddPointParticleType) {
-			textureToUse = addPointParticleTexture;
+
+		if (particles.at(i)->getParticleType() == ParticleType::PixelParticleType) {
+			PixelParticle* particle = dynamic_cast<PixelParticle*>(particles.at(i));
+			Uint8* colors = (Uint8*)particle->getColor();
+			SDL_SetRenderDrawColor(renderer, colors[2], colors[1], colors[0], 255);
+			SDL_Rect rect;
+			rect.w = particle->getSize();
+			rect.h = particle->getSize();
+			rect.x = particle->getPosition().x - rect.w / 2;
+			rect.y = particle->getPosition().y - rect.h / 2;
+			SDL_RenderFillRect(renderer, &rect);
+
+			//std::cout << "Rendered pixel particle at: " << particle->getPosition().x << ", " << particle->getPosition().y << std::endl;
 		}
-		if (particles.at(i)->getParticleType() == ParticleType::LosePointParticleType) {
-			textureToUse = losePointParticleTexture;
-		}
-		if (textureToUse != nullptr) {
-			SDL_QueryTexture(textureToUse, NULL, NULL, &rect.w, &rect.h);
-			rect.x = point.x - (rect.w) / 2;
-			rect.y = point.y - (rect.h) / 2;
-			SDL_RenderCopy(renderer, textureToUse, NULL, &rect);
+		else {
+			SDL_Point point = particles.at(i)->getNearestIntPoint();
+			//SDL_RenderDrawPoint(renderer, point.x, point.y);
+			SDL_Rect rect;
+			SDL_Texture* textureToUse = nullptr;
+			if (particles.at(i)->getParticleType() == ParticleType::AddPointParticleType) {
+				textureToUse = addPointParticleTexture;
+			}
+			if (particles.at(i)->getParticleType() == ParticleType::LosePointParticleType) {
+				textureToUse = losePointParticleTexture;
+			}
+			if (textureToUse != nullptr) {
+				SDL_QueryTexture(textureToUse, NULL, NULL, &rect.w, &rect.h);
+				rect.x = point.x - (rect.w) / 2;
+				rect.y = point.y - (rect.h) / 2;
+				SDL_RenderCopy(renderer, textureToUse, NULL, &rect);
+			}
 		}
 	}
 }
@@ -79,14 +94,11 @@ unsigned int ParticleEngine::getDeleteCount()
 	return returnVal;
 }
 
-bool ParticleEngine::needsRendering()
+bool ParticleEngine::hasParticlesToRender()
 {
-	QUERY_USER_NOTIFICATION_STATE pquns;
-	SHQueryUserNotificationState(&pquns);
-
-	return ((particles.size() != 0) && !isFullscreen(GetForegroundWindow()) && cursorShown());
-	
+	return (particles.size() > 0);
 }
+
 
 unsigned int ParticleEngine::getPointParticleCount()
 {
@@ -99,30 +111,15 @@ unsigned int ParticleEngine::getPointParticleCount()
 	return count;
 }
 
+void ParticleEngine::clearParticlesOfType(ParticleType type) {
 
-//This function is taken from https://stackoverflow.com/questions/7009080/detecting-full-screen-mode-in-windows
-bool isFullscreen(HWND windowHandle)
-{
-	MONITORINFO monitorInfo = { 0 };
-	monitorInfo.cbSize = sizeof(MONITORINFO);
-	GetMonitorInfo(MonitorFromWindow(windowHandle, MONITOR_DEFAULTTOPRIMARY), &monitorInfo);
-
-	RECT windowRect;
-	GetWindowRect(windowHandle, &windowRect);
-
-	return windowRect.left == monitorInfo.rcMonitor.left
-		&& windowRect.right == monitorInfo.rcMonitor.right
-		&& windowRect.top == monitorInfo.rcMonitor.top
-		&& windowRect.bottom == monitorInfo.rcMonitor.bottom;
-}
-
-bool cursorShown() {
-	CURSORINFO ci = { sizeof(CURSORINFO) };
-
-	if (GetCursorInfo(&ci)) {
-		if (ci.flags == 1) {
-			return true;
+	for (int i = 0; i < particles.size(); i++) {
+		if (particles.at(i)->getParticleType() == type) {
+			delete particles.at(i);
+			particles.erase(particles.begin() + i);
+			i--;
 		}
 	}
-	return false;
+
 }
+

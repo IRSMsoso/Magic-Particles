@@ -4,8 +4,9 @@
 #include <iostream>
 #include <Windows.h>
 #include <SDL_image.h>
+#include "PixelParticle.h"
 
-class Particle; //Forward declaration for Particle so that Particle can have reference to the particle engine.
+
 
 class ParticleEngine {
 
@@ -22,13 +23,15 @@ public:
 
 	unsigned int getDeleteCount();
 
-	bool needsRendering();
+	bool hasParticlesToRender();
 
 	unsigned int getPointParticleCount();
 
+	void clearParticlesOfType(ParticleType type);
+
 	void incrementPointDeleteCount() { pointDeleteCount++; }
 
-	POINT getMousePosition() { return mousePos; }
+	POINT* getMousePosition() { return &mousePos; }
 	SDL_DisplayMode* getDisplayMode() { return displayMode; }
 
 private:

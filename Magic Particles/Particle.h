@@ -3,23 +3,22 @@
 #include "MathVector.h"
 #include <chrono>
 #include <iostream>
-#include "ParticleEngine.h"
+#include <Windows.h>
 
 
 enum ParticleType {
 	ParticleErrorType,
 	AddPointParticleType,
 	LosePointParticleType,
+	PixelParticleType,
 };
 
-
-class ParticleEngine; //Forward declaration of ParticleEngine so that we can use it's pointer to spawn particles.
 
 class Particle {
 
 
 public:
-	Particle(MathVector point);
+	Particle(MathVector point, POINT* mousePosition, SDL_DisplayMode* displayMode);
 
 	virtual ~Particle();
 
@@ -33,13 +32,17 @@ public:
 	bool getShouldDelete() { return shouldDie; }
 	ParticleType getParticleType() { return particleType; }
 
-	virtual void update(std::chrono::duration<double> delta, ParticleEngine* pEngine); //Particles should override this if needed, being sure to call super() for acc -> vel and vel -> pos logic.
+	virtual void update(std::chrono::duration<double> delta); //Particles should override this if needed, being sure to call super() for acc -> vel and vel -> pos logic.
 
 
 protected:
 	MathVector position; //Pixels
 	MathVector velocity; //Pixels / Second
 	MathVector acceleration; //Pixels / Second / Second
+
+
+	POINT* mousePosition;
+	SDL_DisplayMode* displayMode;
 
 	
 	ParticleType particleType;

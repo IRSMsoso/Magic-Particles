@@ -1,21 +1,19 @@
 #include "AddPointParticle.h"
 
-AddPointParticle::AddPointParticle(MathVector point): Particle(point) {
+AddPointParticle::AddPointParticle(MathVector point, POINT* newMousePosition, SDL_DisplayMode* newDisplayMode): Particle(point, newMousePosition, newDisplayMode) {
 	velocityCap = 400; //Default for add point particle.
 	particleType = ParticleType::AddPointParticleType;
 
 }
 
-void AddPointParticle::update(std::chrono::duration<double> delta, ParticleEngine* pEngine) {
+void AddPointParticle::update(std::chrono::duration<double> delta) {
 
-	Particle::update(delta, pEngine); // Call to super function for basics.
+	Particle::update(delta); // Call to super function for basics.
 
 
 	//Set Acceleration.
-	POINT p = pEngine->getMousePosition();
-	SDL_DisplayMode* displayMode = pEngine->getDisplayMode();
 
-	MathVector diffVector = MathVector(p.x + 4.0, p.y + 9.0) - position; //Correction to position inside the mouse vector.
+	MathVector diffVector = MathVector(mousePosition->x + 4.0, mousePosition->y + 9.0) - position; //Correction to position inside the mouse vector.
 	MathVector accVector = (diffVector.getUnitVector() / pow(diffVector.getMagnitude(), 2)) * 100000000.0;
 
 	acceleration = accVector;

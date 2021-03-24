@@ -4,9 +4,9 @@ class LosePointParticle: public Particle {
 
 public:
 
-	LosePointParticle(MathVector point);
+	LosePointParticle(MathVector point, POINT* newMousePosition);
 
-	virtual void update(std::chrono::duration<double> delta, ParticleEngine* pEngine);
+	virtual void update(std::chrono::duration<double> delta);
 
 
 };

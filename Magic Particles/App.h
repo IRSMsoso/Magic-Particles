@@ -15,9 +15,40 @@
 #include <iterator>
 #include "AddPointParticle.h"
 #include "LosePointParticle.h"
+#include "PixelParticle.h"
+#include <shellapi.h>
 
 
 #define PI 3.14159265
+
+
+//This function is taken from https://stackoverflow.com/questions/7009080/detecting-full-screen-mode-in-windows
+inline bool isFullscreen(HWND windowHandle)
+{
+	MONITORINFO monitorInfo = { 0 };
+	monitorInfo.cbSize = sizeof(MONITORINFO);
+	GetMonitorInfo(MonitorFromWindow(windowHandle, MONITOR_DEFAULTTOPRIMARY), &monitorInfo);
+
+	RECT windowRect;
+	GetWindowRect(windowHandle, &windowRect);
+
+	return windowRect.left == monitorInfo.rcMonitor.left
+		&& windowRect.right == monitorInfo.rcMonitor.right
+		&& windowRect.top == monitorInfo.rcMonitor.top
+		&& windowRect.bottom == monitorInfo.rcMonitor.bottom;
+}
+
+inline bool cursorShown() {
+	CURSORINFO ci = { sizeof(CURSORINFO) };
+
+	if (GetCursorInfo(&ci)) {
+		if (ci.flags == 1) {
+			return true;
+		}
+	}
+	return false;
+}
+
 
 
 class App{
@@ -46,9 +77,6 @@ protected:
 
 private:
 	bool shouldRun;
-	bool needsGraphicsFlush; //This is used to make sure screen is flushed after turning off rendering due to being idle. If this wasn't here, remnants would be left on the screen.
-	double fps;
-	ParticleEngine particleEngine;
 	MouseEngine mouseEngine;
 
 	unsigned int truePoints;
@@ -68,13 +96,21 @@ private:
 
 	//Overlay Stuff.
 	bool isOverlayShown;
-	bool isInTransitionAnimation;
 	int transitionHeight;
 	SDL_Texture* screenCaptureTexture;
+	SDL_Surface* screenCaptureSurface;
 	std::chrono::system_clock::time_point overlayCooldown;
 
 	void toggleOverlay();
 	void CaptureScreen();
+
+
+
+	//Rendering stuff.
+	bool needsGraphicsFlush; //This is used to make sure screen is flushed after turning off rendering due to being idle. If this wasn't here, remnants would be left on the screen.
+	double fps;
+	ParticleEngine particleEngine;
+	bool shouldRender();
 
 
 	//Timing Stuff.
