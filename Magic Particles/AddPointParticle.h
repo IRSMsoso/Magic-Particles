@@ -6,9 +6,9 @@ class AddPointParticle: public Particle {
 
 
 public:
-	AddPointParticle(MathVector point);
+	AddPointParticle(MathVector point, POINT* mousePosition, SDL_DisplayMode* displayMode);
 
-	virtual void update(std::chrono::duration<double> delta, ParticleEngine* pEngine);
+	virtual void update(std::chrono::duration<double> delta);
 
 };
 

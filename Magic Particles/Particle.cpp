@@ -1,11 +1,13 @@
 #include "Particle.h"
 
-Particle::Particle(MathVector point) {
+Particle::Particle(MathVector point, POINT* newMousePosition, SDL_DisplayMode* newDisplayMode) {
 	position = MathVector(point.x, point.y);
 	shouldDie = false;
 	particleType = ParticleType::ParticleErrorType;
 	birthTime = std::chrono::system_clock::now();
 	lifeSpan = std::chrono::seconds(0);
+	mousePosition = newMousePosition;
+	displayMode = newDisplayMode;
 }
 
 Particle::~Particle()
@@ -32,7 +34,7 @@ SDL_Point Particle::getNearestIntPoint()
 	return point;
 }
 
-void Particle::update(std::chrono::duration<double> delta, ParticleEngine* pEngine) {
+void Particle::update(std::chrono::duration<double> delta) {
 	if (!shouldDie) {
 		velocity = velocity + (acceleration * delta.count());
 		if (velocityCap != 0 && velocity.getMagnitude() > velocityCap) { //Reduce velocity to cap if needed.

@@ -116,7 +116,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);SFML_STATIC;_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\Libraries\SFML-2.5.1\include;..\Libraries\SDL2\include;..\Libraries\SDL2_image\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Libraries\boost_1_75_0\;..\Libraries\SFML-2.5.1\include;..\Libraries\SDL2\include;..\Libraries\SDL2_image\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -133,7 +133,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);SFML_STATIC;_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\Libraries\SFML-2.5.1\include;..\Libraries\SDL2\include;..\Libraries\SDL2_image\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Libraries\boost_1_75_0\;..\Libraries\SFML-2.5.1\include;..\Libraries\SDL2\include;..\Libraries\SDL2_image\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -154,6 +154,7 @@
     <ClCompile Include="MouseEngine.cpp" />
     <ClCompile Include="Particle.cpp" />
     <ClCompile Include="ParticleEngine.cpp" />
+    <ClCompile Include="PixelParticle.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AddPointParticle.h" />
@@ -164,6 +165,7 @@
     <ClInclude Include="MouseEngine.h" />
     <ClInclude Include="Particle.h" />
     <ClInclude Include="ParticleEngine.h" />
+    <ClInclude Include="PixelParticle.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

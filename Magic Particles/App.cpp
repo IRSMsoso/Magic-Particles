@@ -62,22 +62,14 @@ App::App(): particleEngine(&DM) {
 
     //Overlay init stuff.
     isOverlayShown = false;
-    isInTransitionAnimation = false;
     transitionHeight = 0;
     screenCaptureTexture = nullptr;
+    screenCaptureSurface = nullptr;
     overlayCooldown = std::chrono::system_clock::now();
 
 
     //Particle Engine Stuff.
     particleEngine.init(renderer);
-
-    //Testing by spawning particles.
-    //for (int i = 0; i < 0; i++) {
-        //SDL_Point p;
-        //p.x = rand() % 1920;
-        //p.y = rand() % 1080;
-        //particleEngine.spawnParticle(p);
-    //}
 
     truePoints = 0;
     
@@ -87,48 +79,33 @@ App::App(): particleEngine(&DM) {
 void App::render()
 {
 
+    if (shouldRender()) {
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+        SDL_RenderClear(renderer);
+
+        //Overlay Rendering
+
+        
+        //Set background to black (transparent).
 
 
-    //Overlay Rendering
+        particleEngine.render(renderer);
 
-    if (isInTransitionAnimation) {
-        if (isOverlayShown) {
-            SDL_RenderClear(renderer);
-            SDL_Rect rect;
-            rect.x = 0;
-            rect.y = 0 - transitionHeight;
-            rect.h = DM.h;
-            rect.w = DM.w;
-            SDL_RenderCopy(renderer, screenCaptureTexture, NULL, &rect);
-            //std::cout << "TRUE\n";
-            SDL_RenderPresent(renderer);
-        }
-        else {
 
-        }
+        //Present rendering to screen.
+        SDL_RenderPresent(renderer);
+
+        needsGraphicsFlush = true;
+        
+
+        SDL_RenderPresent(renderer);
+
     }
-    if (!isOverlayShown) {
-
-        if (particleEngine.needsRendering()) {
-            //Set background to black (transparent).
-            SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
-            SDL_RenderClear(renderer);
-
-
-            particleEngine.render(renderer);
-
-
-            //Present rendering to screen.
-            SDL_RenderPresent(renderer);
-
-            needsGraphicsFlush = true;
-        }
-        else if (needsGraphicsFlush) {
-            SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
-            SDL_RenderClear(renderer);
-            SDL_RenderPresent(renderer);
-            needsGraphicsFlush = false;
-        }
+    else if (needsGraphicsFlush) {
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+        SDL_RenderClear(renderer);
+        SDL_RenderPresent(renderer);
+        needsGraphicsFlush = false;
     }
 }
 
@@ -163,12 +140,7 @@ void App::update() {
 
 
     //Overlay Update stuff
-    if (isInTransitionAnimation) {
-        transitionHeight += 2;
-        if (transitionHeight > DM.h) {
-            isInTransitionAnimation = false;
-        }
-    }
+    
 
 }
 
@@ -203,7 +175,7 @@ void App::mainLoop() {
         //Find actual FPS.
         const std::chrono::duration<double> actualDuration = std::chrono::system_clock::now() - fpsControlClock;
 
-        //std::cout << "FPS: " << 1.0 / actualDuration.count() << std::endl;
+        std::cout << "FPS: " << 1.0 / actualDuration.count() << std::endl;
 
         lastTimeDifference = actualDuration;
 
@@ -293,31 +265,84 @@ void App::toggleOverlay() {
         isOverlayShown = !isOverlayShown;
 
 
-        if (isOverlayShown && !isInTransitionAnimation) {
-            std::cout << "Overlay Activated\n";
+        std::cout << "Overlay Activated\n";
 
-            CaptureScreen();
-            setWindowVeiled(false);
-            isInTransitionAnimation = true;
-            transitionHeight = 0;
 
-            overlayCooldown = std::chrono::system_clock::now(); //Restart clock
+        particleEngine.clearParticlesOfType(ParticleType::PixelParticleType);
+
+        CaptureScreen();
+        //setWindowVeiled(false);
+        //transitionHeight = 0;
+        const int DIVISIONSIZE = 15; //Common Denominators available between 1080 and 1920 include 2,3,4,5,6,8,10,12,15,20,24
+
+
+        int bpp = screenCaptureSurface->format->BytesPerPixel;
+
+        std::cout << "Bytes per pixel: " << bpp << std::endl;
+
+
+
+        for (int y = 0; y < DM.h; y += DIVISIONSIZE) {
+            for (int x = 0; x < DM.w; x += DIVISIONSIZE) {
+
+                Uint32* color = new Uint32;
+
+                int red = 0, green = 0, blue = 0;
+
+                for (int dy = 0; dy < DIVISIONSIZE; dy++) {
+                    for (int dx = 0; dx < DIVISIONSIZE; dx++) {
+                        Uint8* p = (Uint8*)screenCaptureSurface->pixels + (y + dy) * screenCaptureSurface->pitch + (x + dx) * bpp;
+
+                        red += (int)p[2];
+                        green += (int)p[1];
+                        blue += (int)p[0];
+
+                    }
+                }
+
+                red /= (DIVISIONSIZE * DIVISIONSIZE);
+                green /= (DIVISIONSIZE * DIVISIONSIZE);
+                blue /= (DIVISIONSIZE * DIVISIONSIZE);
+
+                //std::cout << "Average Red: " << red << std::endl;
+
+                if (red == 0)
+                    red = 1;
+                if (green == 0)
+                    green = 1;
+                if (blue == 0)
+                    blue = 1;
+
+                //std::cout << "Average Red: " << red << std::endl;
+
+                ((Uint8*)color)[2] = red;
+                ((Uint8*)color)[1] = green;
+                ((Uint8*)color)[0] = blue;
+
+
+                //Test
+                MathVector point(x + DIVISIONSIZE / 2.0, y + DIVISIONSIZE / 2.0);
+                PixelParticle* newParticle = new PixelParticle(point, particleEngine.getMousePosition(), &DM, color, DIVISIONSIZE);
+                particleEngine.spawnParticle(newParticle);
+            }
+            std::cout << y << std::endl;
         }
-        else if (!isOverlayShown) {
 
-            setWindowVeiled(true);
+        render(); //Call to flush new info to the rendering target before we switch up the window settings.
 
-            overlayCooldown = std::chrono::system_clock::now(); //Restart clock
-        }
+        setWindowVeiled(!isOverlayShown);
 
+        overlayCooldown = std::chrono::system_clock::now(); //Restart clock
     }
-
+    
 }
 
 void App::CaptureScreen() {
 
     if (screenCaptureTexture != nullptr)
         SDL_DestroyTexture(screenCaptureTexture);
+    if (screenCaptureSurface != nullptr)
+        SDL_FreeSurface(screenCaptureSurface);
 
     HDC hDC = GetDC(NULL);
     HDC hBitmapDC = CreateCompatibleDC(hDC);
@@ -331,6 +356,7 @@ void App::CaptureScreen() {
     else {
         SaveBitmap(hBitmapDC, hBitmap, "capture.bmp");
         screenCaptureTexture = IMG_LoadTexture(renderer, "capture.bmp");
+        screenCaptureSurface = IMG_Load("capture.bmp");
         std::cout << IMG_GetError() << std::endl;
     }
 
@@ -338,6 +364,24 @@ void App::CaptureScreen() {
     ReleaseDC(NULL, hDC);
     DeleteObject(hBitmap);
 
+}
+
+bool App::shouldRender() {
+
+    QUERY_USER_NOTIFICATION_STATE pquns;
+    SHQueryUserNotificationState(&pquns);
+ 
+    SDL_GetWindowWMInfo(window, &info);
+    bool preOccupied = ((isFullscreen(GetForegroundWindow()) && (GetForegroundWindow() != info.info.win.window)) || !cursorShown());
+
+    //std::cout << "Foreground Window: " << GetForegroundWindow() 
+
+    if (!preOccupied && particleEngine.hasParticlesToRender()) {
+        return true;
+    }
+    else {
+        return false;
+    }
 }
 
 //Manages the network logic for the app. This includes connecting, sending, receiving, and setting appropriate data. Called every frame.
@@ -424,7 +468,7 @@ void App::appLogic() {
                 else
                     point.y = DM.h - 1.0;
 
-                AddPointParticle* newParticle = new AddPointParticle(point);
+                AddPointParticle* newParticle = new AddPointParticle(point, particleEngine.getMousePosition(), &DM);
                 newParticle->setVelocity(velocity);
                 particleEngine.spawnParticle(newParticle);
             }
@@ -435,9 +479,9 @@ void App::appLogic() {
     if (mouseEngine.getPoints() > truePoints){
         std::cout << "Mouse Engine: " << mouseEngine.getPoints() << std::endl;
         std::cout << "True Points: " << truePoints << std::endl;
-        POINT p = particleEngine.getMousePosition();
+        POINT p = *particleEngine.getMousePosition();
         MathVector position(p.x + 4.0, p.y + 9.0);
-        LosePointParticle* newParticle = new LosePointParticle(position);
+        LosePointParticle* newParticle = new LosePointParticle(position, particleEngine.getMousePosition());
         MathVector velocity;
         double radianAngle = ((rand() % 360) * PI / 180.0); //Picks random angle to shoot particle at.
         const double SPEEDMODIFIER = 200.0;
@@ -452,7 +496,7 @@ void App::appLogic() {
 
     //Overlay Logic
     
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) && sf::Keyboard::isKeyPressed(sf::Keyboard::Tab) && !isInTransitionAnimation) {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) && sf::Keyboard::isKeyPressed(sf::Keyboard::Tab)) {
 
         toggleOverlay();
 
