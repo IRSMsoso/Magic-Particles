@@ -164,7 +164,7 @@ void App::update() {
 
     //Overlay Update stuff
     if (isInTransitionAnimation) {
-        transitionHeight += 1;
+        transitionHeight += 2;
         if (transitionHeight > DM.h) {
             isInTransitionAnimation = false;
         }
