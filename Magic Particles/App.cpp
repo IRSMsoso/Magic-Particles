@@ -63,7 +63,9 @@ App::App(): particleEngine(&DM) {
     //Overlay init stuff.
     isOverlayShown = false;
     isInTransitionAnimation = false;
+    transitionHeight = 0;
     screenCaptureTexture = nullptr;
+    overlayCooldown = std::chrono::system_clock::now();
 
 
     //Particle Engine Stuff.
@@ -85,26 +87,6 @@ App::App(): particleEngine(&DM) {
 void App::render()
 {
 
-    if (particleEngine.needsRendering()) {
-        //Set background to black (transparent).
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
-        SDL_RenderClear(renderer);
-
-
-        particleEngine.render(renderer);
-
-
-        //Present rendering to screen.
-        SDL_RenderPresent(renderer);
-
-        needsGraphicsFlush = true;
-    }
-    else if (needsGraphicsFlush) {
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
-        SDL_RenderClear(renderer);
-        SDL_RenderPresent(renderer);
-        needsGraphicsFlush = false;
-    }
 
 
     //Overlay Rendering
@@ -114,7 +96,7 @@ void App::render()
             SDL_RenderClear(renderer);
             SDL_Rect rect;
             rect.x = 0;
-            rect.y = 0;
+            rect.y = 0 - transitionHeight;
             rect.h = DM.h;
             rect.w = DM.w;
             SDL_RenderCopy(renderer, screenCaptureTexture, NULL, &rect);
@@ -125,7 +107,29 @@ void App::render()
 
         }
     }
+    if (!isOverlayShown) {
 
+        if (particleEngine.needsRendering()) {
+            //Set background to black (transparent).
+            SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+            SDL_RenderClear(renderer);
+
+
+            particleEngine.render(renderer);
+
+
+            //Present rendering to screen.
+            SDL_RenderPresent(renderer);
+
+            needsGraphicsFlush = true;
+        }
+        else if (needsGraphicsFlush) {
+            SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+            SDL_RenderClear(renderer);
+            SDL_RenderPresent(renderer);
+            needsGraphicsFlush = false;
+        }
+    }
 }
 
 //Called from mainLoop(). This calls all the "update" related functions, including those of member objects. Called every frame.
@@ -156,6 +160,16 @@ void App::update() {
 
     //Networking stuff.
     updateNetworking();
+
+
+    //Overlay Update stuff
+    if (isInTransitionAnimation) {
+        transitionHeight += 1;
+        if (transitionHeight > DM.h) {
+            isInTransitionAnimation = false;
+        }
+    }
+
 }
 
 //The main loop that we will be stuck in for a majority of the program's life.
@@ -275,22 +289,26 @@ BOOL SaveBitmap(HDC hDC, HBITMAP hBitmap, std::string fileDestination)
 }
 
 void App::toggleOverlay() {
-
-    isOverlayShown = !isOverlayShown;
-
-
-    if (isOverlayShown) {
-        std::cout << "Overlay Activated\n";
-
-        CaptureScreen();
-        setWindowVeiled(false);
-        isInTransitionAnimation = true;
+    if (std::chrono::system_clock::now() - overlayCooldown > std::chrono::seconds(2)) { //Implements a cooldown period for switching the overlay.
+        isOverlayShown = !isOverlayShown;
 
 
-    }
-    else {
+        if (isOverlayShown && !isInTransitionAnimation) {
+            std::cout << "Overlay Activated\n";
 
+            CaptureScreen();
+            setWindowVeiled(false);
+            isInTransitionAnimation = true;
+            transitionHeight = 0;
 
+            overlayCooldown = std::chrono::system_clock::now(); //Restart clock
+        }
+        else if (!isOverlayShown) {
+
+            setWindowVeiled(true);
+
+            overlayCooldown = std::chrono::system_clock::now(); //Restart clock
+        }
 
     }
 

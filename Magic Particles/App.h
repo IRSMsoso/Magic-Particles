@@ -69,7 +69,9 @@ private:
 	//Overlay Stuff.
 	bool isOverlayShown;
 	bool isInTransitionAnimation;
+	int transitionHeight;
 	SDL_Texture* screenCaptureTexture;
+	std::chrono::system_clock::time_point overlayCooldown;
 
 	void toggleOverlay();
 	void CaptureScreen();
