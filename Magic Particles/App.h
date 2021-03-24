@@ -63,7 +63,17 @@ private:
 
 	void appLogic();
 
-	void customizeWindow();
+	void setWindowVeiled(bool veil);
+
+
+	//Overlay Stuff.
+	bool isOverlayShown;
+	bool isInTransitionAnimation;
+	SDL_Texture* screenCaptureTexture;
+
+	void toggleOverlay();
+	void CaptureScreen();
+
 
 	//Timing Stuff.
 	std::chrono::system_clock::time_point fpsControlClock;

@@ -52,13 +52,18 @@ App::App(): particleEngine(&DM) {
     needsGraphicsFlush = true;
     shouldCatchup = true;
 
-    customizeWindow();
+    setWindowVeiled(true);
 
 
 
     //Networking init stuff.
     socket.setBlocking(false);
     networkClock = std::chrono::system_clock::now();
+
+    //Overlay init stuff.
+    isOverlayShown = false;
+    isInTransitionAnimation = false;
+    screenCaptureTexture = nullptr;
 
 
     //Particle Engine Stuff.
@@ -100,6 +105,27 @@ void App::render()
         SDL_RenderPresent(renderer);
         needsGraphicsFlush = false;
     }
+
+
+    //Overlay Rendering
+
+    if (isInTransitionAnimation) {
+        if (isOverlayShown) {
+            SDL_RenderClear(renderer);
+            SDL_Rect rect;
+            rect.x = 0;
+            rect.y = 0;
+            rect.h = DM.h;
+            rect.w = DM.w;
+            SDL_RenderCopy(renderer, screenCaptureTexture, NULL, &rect);
+            //std::cout << "TRUE\n";
+            SDL_RenderPresent(renderer);
+        }
+        else {
+
+        }
+    }
+
 }
 
 //Called from mainLoop(). This calls all the "update" related functions, including those of member objects. Called every frame.
@@ -147,8 +173,10 @@ void App::mainLoop() {
         render();
         
         SDL_Event pollEvent;
-        SDL_PollEvent(&pollEvent); //This is needed to keep window from going unresponsive. Internally (as I understand), SDL uses this function to communicate with windows and stay alive.
 
+        while (SDL_PollEvent(&pollEvent)) { //This is needed to keep window from going unresponsive. Internally (as I understand), SDL uses this function to communicate with windows and stay alive.
+
+        }
 
         //customizeWindow(); //What if I just call this every frame? NO! not needed.
 
@@ -181,6 +209,117 @@ void App::cleanup() {
     renderer = NULL;
     SDL_Quit();
     return;
+}
+
+BOOL SaveBitmap(HDC hDC, HBITMAP hBitmap, std::string fileDestination)
+{
+    OutputDebugString(L"Start SaveBitmap() ");
+    DWORD error;
+    FILE* fp = NULL;
+    fp = fopen(fileDestination.c_str(), "wb");
+    if (fp == NULL)
+    {
+        OutputDebugString(L"Error Unable to Create File ");
+        return false;
+    }
+    BITMAP Bm;
+    BITMAPINFO BitInfo;
+    ZeroMemory(&BitInfo, sizeof(BITMAPINFO));
+    BitInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+    BitInfo.bmiHeader.biBitCount = 0;
+
+    if (!::GetDIBits(hDC, hBitmap, 0, 0, NULL, &BitInfo, DIB_RGB_COLORS))
+    {
+        OutputDebugString(L"Error GetDIBits Fail");
+
+        return (false);
+    }
+    Bm.bmHeight = BitInfo.bmiHeader.biHeight;
+    Bm.bmWidth = BitInfo.bmiHeader.biWidth;
+
+    BITMAPFILEHEADER    BmHdr;
+
+    BmHdr.bfType = 0x4d42;   // 'BM' WINDOWS_BITMAP_SIGNATURE
+    BmHdr.bfSize = (((3 * Bm.bmWidth + 3) & ~3) * Bm.bmHeight)
+        + sizeof(BITMAPFILEHEADER)
+        + sizeof(BITMAPINFOHEADER);
+    BmHdr.bfReserved1 = BmHdr.bfReserved2 = 0;
+    BmHdr.bfOffBits = (DWORD)sizeof(BITMAPFILEHEADER)
+        + sizeof(BITMAPINFOHEADER);
+
+    BitInfo.bmiHeader.biCompression = 0;
+    // Writing Bitmap File Header ////
+    size_t size = fwrite(&BmHdr, sizeof(BITMAPFILEHEADER), 1, fp);
+    if (size < 1)
+    {
+        OutputDebugString(L"Error  Header Write");
+        error = GetLastError();
+    }
+    size = fwrite(&BitInfo.bmiHeader, sizeof(BITMAPINFOHEADER), 1, fp);
+    if (size < 1)
+    {
+        OutputDebugString(L"Error  Write");
+        error = GetLastError();
+    }
+    BYTE* pData = new BYTE[BitInfo.bmiHeader.biSizeImage + 5];
+    if (!::GetDIBits(hDC, hBitmap, 0, Bm.bmHeight,
+        pData, &BitInfo, DIB_RGB_COLORS))
+        return (false);
+    if (pData != NULL)
+        fwrite(pData, 1, BitInfo.bmiHeader.biSizeImage, fp);
+
+    fclose(fp);
+    delete (pData);
+
+    return (true);
+}
+
+void App::toggleOverlay() {
+
+    isOverlayShown = !isOverlayShown;
+
+
+    if (isOverlayShown) {
+        std::cout << "Overlay Activated\n";
+
+        CaptureScreen();
+        setWindowVeiled(false);
+        isInTransitionAnimation = true;
+
+
+    }
+    else {
+
+
+
+    }
+
+}
+
+void App::CaptureScreen() {
+
+    if (screenCaptureTexture != nullptr)
+        SDL_DestroyTexture(screenCaptureTexture);
+
+    HDC hDC = GetDC(NULL);
+    HDC hBitmapDC = CreateCompatibleDC(hDC);
+    HBITMAP hBitmap = CreateCompatibleBitmap(hDC, DM.w, DM.h);
+    SelectObject(hBitmapDC, hBitmap);
+
+
+    if (!BitBlt(hBitmapDC, 0, 0, DM.w, DM.h, hDC, 0, 0, SRCCOPY)) {
+        std::cout << GetLastError() << std::endl;
+    }
+    else {
+        SaveBitmap(hBitmapDC, hBitmap, "capture.bmp");
+        screenCaptureTexture = IMG_LoadTexture(renderer, "capture.bmp");
+        std::cout << IMG_GetError() << std::endl;
+    }
+
+    DeleteDC(hBitmapDC);
+    ReleaseDC(NULL, hDC);
+    DeleteObject(hBitmap);
+
 }
 
 //Manages the network logic for the app. This includes connecting, sending, receiving, and setting appropriate data. Called every frame.
@@ -291,18 +430,43 @@ void App::appLogic() {
         particleEngine.spawnParticle(newParticle);
         mouseEngine.removePoints(1);
     }
+
+
+    //Overlay Logic
+    
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) && sf::Keyboard::isKeyPressed(sf::Keyboard::Tab) && !isInTransitionAnimation) {
+
+        toggleOverlay();
+
+    }
+
 }
 
-void App::customizeWindow() {
+
+void App::setWindowVeiled(bool veil) {
+
     //Customize window using winapi.
     if (SDL_GetWindowWMInfo(window, &info)) { /* the call returns true on success */
         HWND hwnd = info.info.win.window; //Get window handle from info object.
-        SetWindowLong(hwnd, GWL_EXSTYLE, GetWindowLong(hwnd, GWL_EXSTYLE) | WS_EX_TRANSPARENT | WS_EX_LAYERED | WS_EX_TOOLWINDOW | WS_EX_TOPMOST); //Set all the options to customize window.
-        SetLayeredWindowAttributes(hwnd, RGB(0, 0, 0), 0, LWA_COLORKEY); //Make it so that straight black color renders as a transparent window.
+
+        long style = GetWindowLong(hwnd, GWL_EXSTYLE);
+
+        if (veil) {
+            SetWindowLong(hwnd, GWL_EXSTYLE, style | WS_EX_TRANSPARENT | WS_EX_LAYERED | WS_EX_TOOLWINDOW | WS_EX_TOPMOST); //Set all the options to customize window.
+            SetLayeredWindowAttributes(hwnd, RGB(0, 0, 0), 0, LWA_COLORKEY); //Make it so that straight black color renders as a transparent window.
+        }
+        else {
+            style &= ~WS_EX_LAYERED;
+            style &= ~WS_EX_TRANSPARENT;
+            SetWindowLong(hwnd, GWL_EXSTYLE, style); //Set all the options to customize window.
+        }
+
     }
     else {
         /* call failed */
         printf("Couldn't initialize window properly. Closing.");
         close();
     }
+
+
 }
