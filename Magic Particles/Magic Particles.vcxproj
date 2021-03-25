@@ -152,6 +152,7 @@
     <ClCompile Include="Magic Particles.cpp" />
     <ClCompile Include="MathVector.cpp" />
     <ClCompile Include="MouseEngine.cpp" />
+    <ClCompile Include="Overlay.cpp" />
     <ClCompile Include="Particle.cpp" />
     <ClCompile Include="ParticleEngine.cpp" />
     <ClCompile Include="PixelParticle.cpp" />
@@ -163,6 +164,7 @@
     <ClInclude Include="LosePointParticle.h" />
     <ClInclude Include="MathVector.h" />
     <ClInclude Include="MouseEngine.h" />
+    <ClInclude Include="Overlay.h" />
     <ClInclude Include="Particle.h" />
     <ClInclude Include="ParticleEngine.h" />
     <ClInclude Include="PixelParticle.h" />

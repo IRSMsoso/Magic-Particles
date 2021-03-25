@@ -1,6 +1,6 @@
 #include "App.h"
 
-App::App(): particleEngine(&DM) {
+App::App(): particleEngine(&DM), overlay(&DM) {
 
 	SDL_Init(SDL_INIT_VIDEO); //Init SDL
     IMG_Init(IMG_INIT_PNG);
@@ -65,9 +65,8 @@ App::App(): particleEngine(&DM) {
     transitionHeight = 0;
     screenCaptureSurface = nullptr;
     overlayCooldown = std::chrono::system_clock::now();
-
-    //Stuff in overlay init.
-    blackHoleTexture = IMG_LoadTexture(renderer, "Eclipse.png");
+    overlay.init(renderer);  //Load all overlay resources and init stuff.
+    
 
 
     //Particle Engine Stuff.
@@ -93,14 +92,7 @@ void App::render()
 
     if (renderOverlay) {  //Render the overlay stuff. This goes before particles so that it's background to them.
 
-
-        //Rendering random things.
-        SDL_Rect eclipseRect;
-        eclipseRect.x = (DM.w / 2) - (150.0 / 2.0);
-        eclipseRect.y = (DM.h / 2) - (150.0 / 2.0);
-        eclipseRect.h = 150;
-        eclipseRect.w = 150;
-        SDL_RenderCopy(renderer, blackHoleTexture, NULL, &eclipseRect);
+        overlay.render(renderer);
 
     }
 

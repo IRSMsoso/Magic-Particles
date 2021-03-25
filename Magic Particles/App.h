@@ -17,6 +17,7 @@
 #include "LosePointParticle.h"
 #include "PixelParticle.h"
 #include <shellapi.h>
+#include "Overlay.h"
 
 
 #define PI 3.14159265
@@ -103,9 +104,7 @@ private:
 	void toggleOverlay();
 	void CaptureScreen();
 
-
-	//Stuff On Overlay.
-	SDL_Texture* blackHoleTexture;
+	Overlay overlay;
 
 
 
