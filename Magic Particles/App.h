@@ -97,7 +97,6 @@ private:
 	//Overlay Stuff.
 	bool isOverlayShown;
 	int transitionHeight;
-	SDL_Texture* screenCaptureTexture;
 	SDL_Surface* screenCaptureSurface;
 	std::chrono::system_clock::time_point overlayCooldown;
 
@@ -105,12 +104,16 @@ private:
 	void CaptureScreen();
 
 
+	//Stuff On Overlay.
+	SDL_Texture* blackHoleTexture;
+
+
 
 	//Rendering stuff.
 	bool needsGraphicsFlush; //This is used to make sure screen is flushed after turning off rendering due to being idle. If this wasn't here, remnants would be left on the screen.
 	double fps;
 	ParticleEngine particleEngine;
-	bool shouldRender();
+	bool shouldRenderParticles();
 
 
 	//Timing Stuff.

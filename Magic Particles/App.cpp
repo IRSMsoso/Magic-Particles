@@ -63,9 +63,11 @@ App::App(): particleEngine(&DM) {
     //Overlay init stuff.
     isOverlayShown = false;
     transitionHeight = 0;
-    screenCaptureTexture = nullptr;
     screenCaptureSurface = nullptr;
     overlayCooldown = std::chrono::system_clock::now();
+
+    //Stuff in overlay init.
+    blackHoleTexture = IMG_LoadTexture(renderer, "Eclipse.png");
 
 
     //Particle Engine Stuff.
@@ -79,32 +81,44 @@ App::App(): particleEngine(&DM) {
 void App::render()
 {
 
-    if (shouldRender()) {
+    bool renderParticles = shouldRenderParticles();
+    bool renderOverlay = isOverlayShown;
+
+    bool willRenderSomething = renderParticles || renderOverlay;
+
+    if (willRenderSomething || needsGraphicsFlush) {  //If we will render something or flush graphics, we first need to clear the screen.
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
         SDL_RenderClear(renderer);
+    }
 
-        //Overlay Rendering
+    if (renderOverlay) {  //Render the overlay stuff. This goes before particles so that it's background to them.
 
-        
-        //Set background to black (transparent).
 
+        //Rendering random things.
+        SDL_Rect eclipseRect;
+        eclipseRect.x = (DM.w / 2) - (150.0 / 2.0);
+        eclipseRect.y = (DM.h / 2) - (150.0 / 2.0);
+        eclipseRect.h = 150;
+        eclipseRect.w = 150;
+        SDL_RenderCopy(renderer, blackHoleTexture, NULL, &eclipseRect);
+
+    }
+
+    if (renderParticles) {  //Render those particles.
 
         particleEngine.render(renderer);
 
-
-        //Present rendering to screen.
-        SDL_RenderPresent(renderer);
-
-        needsGraphicsFlush = true;
-        
-
-        SDL_RenderPresent(renderer);
-
     }
-    else if (needsGraphicsFlush) {
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
-        SDL_RenderClear(renderer);
+
+    if (willRenderSomething) {  //If we rendered something, we need a graphics flush next down period.
+        needsGraphicsFlush = true;
+    }
+
+    if (willRenderSomething || needsGraphicsFlush) {  //If we rendered something or flushed graphics, present that to the screen.
         SDL_RenderPresent(renderer);
+    }
+
+    if (!willRenderSomething && needsGraphicsFlush) {  //If we didn't render something and needed a graphics flush, that means we've already flushed it from above statements.
         needsGraphicsFlush = false;
     }
 }
@@ -343,8 +357,6 @@ void App::toggleOverlay() {
 
 void App::CaptureScreen() {
 
-    if (screenCaptureTexture != nullptr)
-        SDL_DestroyTexture(screenCaptureTexture);
     if (screenCaptureSurface != nullptr)
         SDL_FreeSurface(screenCaptureSurface);
 
@@ -359,7 +371,6 @@ void App::CaptureScreen() {
     }
     else {
         SaveBitmap(hBitmapDC, hBitmap, "capture.bmp");
-        screenCaptureTexture = IMG_LoadTexture(renderer, "capture.bmp");
         screenCaptureSurface = IMG_Load("capture.bmp");
         
         
@@ -373,7 +384,7 @@ void App::CaptureScreen() {
 
 }
 
-bool App::shouldRender() {
+bool App::shouldRenderParticles() {
 
     QUERY_USER_NOTIFICATION_STATE pquns;
     SHQueryUserNotificationState(&pquns);
