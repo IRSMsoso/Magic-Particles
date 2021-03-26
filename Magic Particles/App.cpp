@@ -65,7 +65,7 @@ App::App(): particleEngine(&DM), overlay(&DM) {
     transitionHeight = 0;
     screenCaptureSurface = nullptr;
     overlayCooldown = std::chrono::system_clock::now();
-    overlay.init(renderer);  //Load all overlay resources and init stuff.
+    overlay.init(renderer, &particleEngine);  //Load all overlay resources and init stuff.
     
 
 
@@ -86,19 +86,24 @@ void App::render()
     bool willRenderSomething = renderParticles || renderOverlay;
 
     if (willRenderSomething || needsGraphicsFlush) {  //If we will render something or flush graphics, we first need to clear the screen.
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+        if (renderOverlay) {
+            SDL_SetRenderDrawColor(renderer, 238, 204, 255, SDL_ALPHA_OPAQUE);
+        }
+        else {
+            SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+        }
         SDL_RenderClear(renderer);
     }
 
     if (renderOverlay) {  //Render the overlay stuff. This goes before particles so that it's background to them.
 
-        overlay.render(renderer);
+        overlay.render();
 
     }
 
     if (renderParticles) {  //Render those particles.
 
-        particleEngine.render(renderer);
+        particleEngine.render(renderer, isOverlayShown);
 
     }
 
@@ -130,7 +135,11 @@ void App::update() {
         particleEngine.spawnParticle(p, color);
     }
     */
-    particleEngine.update(lastTimeDifference, &DM);
+    if (isOverlayShown) {
+        overlay.update(lastTimeDifference);
+    }
+
+    particleEngine.update(lastTimeDifference, &DM, isOverlayShown);
 
     mouseEngine.addPoints(particleEngine.getDeleteCount()); //Extract count of deleted particles from engine and add those to mouse points.
 

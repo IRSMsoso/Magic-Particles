@@ -11,13 +11,16 @@ ParticleEngine::ParticleEngine(SDL_DisplayMode* newDisplayMode) {
 	displayMode = newDisplayMode;
 }
 
-void ParticleEngine::update(std::chrono::duration<double> delta, SDL_DisplayMode* displayMode) {
+void ParticleEngine::update(std::chrono::duration<double> delta, SDL_DisplayMode* displayMode, bool shouldUpdateOverlayParticles) {
 	GetCursorPos(&mousePos);
 
 	for (int i = 0; i < particles.size(); i++) {
 		//Call update here.
 
-		particles.at(i)->update(delta);
+
+		if (particles.at(i)->getParticleType() != ParticleType::ConstructionParticleType) {  //Construction particles are updated by their stars.
+			particles.at(i)->update(delta);
+		}
 
 
 		//Delete particles that should be deleted.
@@ -37,11 +40,12 @@ void ParticleEngine::update(std::chrono::duration<double> delta, SDL_DisplayMode
 	
 }
 
-void ParticleEngine::render(SDL_Renderer* renderer) {
+void ParticleEngine::render(SDL_Renderer* renderer, bool shouldShowOverlayParticles) {
 
 	for (int i = 0; i < particles.size(); i++) {
 
-		if (particles.at(i)->getParticleType() == ParticleType::PixelParticleType) {
+		ParticleType particleType = particles.at(i)->getParticleType();
+		if (particleType == ParticleType::PixelParticleType) {
 			PixelParticle* particle = dynamic_cast<PixelParticle*>(particles.at(i));
 			Uint8* colors = (Uint8*)particle->getColor();
 			SDL_SetRenderDrawColor(renderer, colors[2], colors[1], colors[0], 255);
@@ -53,6 +57,17 @@ void ParticleEngine::render(SDL_Renderer* renderer) {
 			SDL_RenderFillRect(renderer, &rect);
 
 			//std::cout << "Rendered pixel particle at: " << particle->getPosition().x << ", " << particle->getPosition().y << std::endl;
+		}
+		else if (shouldShowOverlayParticles && particleType == ParticleType::ConstructionParticleType) {
+			ConstructionParticle* particle = dynamic_cast<ConstructionParticle*>(particles.at(i));
+			Uint8* colors = (Uint8*)particle->getColor();
+			SDL_SetRenderDrawColor(renderer, colors[0], colors[1], colors[2], 255);
+			SDL_Rect rect;
+			rect.w = particle->getSize();
+			rect.h = particle->getSize();
+			rect.x = particle->getPosition().x - rect.w / 2;
+			rect.y = particle->getPosition().y - rect.h / 2;
+			SDL_RenderFillRect(renderer, &rect);
 		}
 		else {
 			SDL_Point point = particles.at(i)->getNearestIntPoint();
@@ -121,5 +136,15 @@ void ParticleEngine::clearParticlesOfType(ParticleType type) {
 		}
 	}
 
+}
+
+void ParticleEngine::deleteParticle(Particle* particle) {
+	for (int i = 0; i < particles.size(); i++) {
+		if (particles.at(i) == particle) {
+			delete particles.at(i);
+			particles.erase(particles.begin() + i);
+			i--;
+		}
+	}
 }
 

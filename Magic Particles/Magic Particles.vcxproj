@@ -148,6 +148,7 @@
     <ClCompile Include="AddPointParticle.cpp" />
     <ClCompile Include="App.cpp" />
     <ClCompile Include="ColorCursor.cpp" />
+    <ClCompile Include="ConstructionParticle.cpp" />
     <ClCompile Include="LosePointParticle.cpp" />
     <ClCompile Include="Magic Particles.cpp" />
     <ClCompile Include="MathVector.cpp" />
@@ -156,11 +157,13 @@
     <ClCompile Include="Particle.cpp" />
     <ClCompile Include="ParticleEngine.cpp" />
     <ClCompile Include="PixelParticle.cpp" />
+    <ClCompile Include="Star.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AddPointParticle.h" />
     <ClInclude Include="App.h" />
     <ClInclude Include="ColorCursor.h" />
+    <ClInclude Include="ConstructionParticle.h" />
     <ClInclude Include="LosePointParticle.h" />
     <ClInclude Include="MathVector.h" />
     <ClInclude Include="MouseEngine.h" />
@@ -168,6 +171,7 @@
     <ClInclude Include="Particle.h" />
     <ClInclude Include="ParticleEngine.h" />
     <ClInclude Include="PixelParticle.h" />
+    <ClInclude Include="Star.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

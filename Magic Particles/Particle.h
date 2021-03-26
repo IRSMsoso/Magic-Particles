@@ -11,6 +11,7 @@ enum ParticleType {
 	AddPointParticleType,
 	LosePointParticleType,
 	PixelParticleType,
+	ConstructionParticleType,
 };
 
 

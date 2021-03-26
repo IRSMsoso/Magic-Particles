@@ -2,23 +2,41 @@
 
 Overlay::Overlay(SDL_DisplayMode* newDisplayMode) {
 
-
+	//References
+	displayMode = newDisplayMode;
+	renderer = nullptr;
 
 	//initial values
 	blackHoleTexture = nullptr;
-	displayMode = newDisplayMode;
+
+
 }
 
-void Overlay::init(SDL_Renderer* renderer) {
+void Overlay::init(SDL_Renderer* newRenderer, ParticleEngine* pEngine) { //Give renderer once renderer is set up.
+	//References
+	renderer = newRenderer;
+	particleEngine = pEngine;
+
 
 	//Stuff in overlay init.
 	blackHoleTexture = IMG_LoadTexture(renderer, "Eclipse.png");
 	std::cout << "ERROR: " << IMG_GetError() << std::endl;
+
+
+
+	//Testing
+	stars.push_back(Star(0, particleEngine, renderer, displayMode));
+	//
 }
 
-void Overlay::render(SDL_Renderer* renderer) {
+void Overlay::render() {
 
-	std::cout << "Called render\n";
+	//std::cout << "Called render\n";
+
+	for (int i = 0; i < stars.size(); i++) {
+		stars.at(i).render();
+	}
+
 
 	//Rendering random things.
 	SDL_Rect eclipseRect;
@@ -28,8 +46,15 @@ void Overlay::render(SDL_Renderer* renderer) {
 	eclipseRect.w = 150;
 	SDL_RenderCopy(renderer, blackHoleTexture, NULL, &eclipseRect);
 
+
+	
+
 }
 
-void Overlay::update()
-{
+void Overlay::update(std::chrono::duration<double> delta) {
+
+	for (int i = 0; i < stars.size(); i++) {
+		stars.at(i).update(delta);
+	}
+
 }
