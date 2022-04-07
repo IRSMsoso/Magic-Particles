@@ -151,7 +151,7 @@ void App::update() {
 
 
     //Networking stuff.
-    updateNetworking();
+    //updateNetworking();
 
 
     //Overlay Update stuff
